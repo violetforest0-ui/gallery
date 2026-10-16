@@ -124,6 +124,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #plan .wall{stroke:var(--ink);stroke-width:4;fill:none}
 #plan .face-t{font-family:var(--mono);font-size:9px;fill:var(--muted)}
 #plan .kiosk{fill:var(--muted)}
+.size-row{display:flex;align-items:center;gap:6px}
+.size-row input{min-width:0}
+.size-row span{color:var(--muted)}
 #plan .dim{stroke:var(--muted);stroke-width:1;fill:none}
 #plan .dim-t{font-family:var(--mono);font-size:9px;fill:var(--muted)}
 #plan .dot{cursor:pointer}
@@ -346,6 +349,10 @@ textarea{min-height:110px;resize:vertical}
               <button type="button" class="btn" id="w-colorReset">전시장 벽 색과 같게</button>
               <span id="w-delWrap"></span>
             </div>
+            <div class="wallctl" id="kioskCtl" hidden>
+              <label class="rng" for="ki-rot">방향 <input type="range" id="ki-rot" min="0" max="345" step="15"><output id="ki-rotOut"></output></label>
+              <button type="button" class="btn" id="ki-reset">입구 앞 처음 자리로</button>
+            </div>
           </div>
           <div class="wallbar" id="workBar" hidden>
             <span class="msg" id="workSelInfo"></span>
@@ -411,7 +418,7 @@ textarea{min-height:110px;resize:vertical}
       <div class="field"><label for="f-spot">거는 벽</label><select id="f-spot"></select></div>
       <div class="field"><label for="f-order">벽 안에서 순서</label><input id="f-order" type="number" min="1" max="99" placeholder="비우면 연도순"><small>왼쪽부터 1, 2, 3…</small></div>
       <div class="field"><label for="f-medium">재료·기법</label><input id="f-medium" maxlength="60" placeholder="예: 프레스코"></div>
-      <div class="field"><label for="f-place">소장처</label><input id="f-place" maxlength="60" placeholder="예: 바티칸 사도 궁전"></div>
+      <div class="field"><label for="f-hcm">작품 크기 (cm)</label><div class="size-row"><input id="f-hcm" type="number" min="1" max="2000" step="0.1" inputmode="decimal" placeholder="세로" aria-label="세로 (cm)"><span aria-hidden="true">×</span><input id="f-wcm" type="number" min="1" max="2000" step="0.1" inputmode="decimal" placeholder="가로" aria-label="가로 (cm)"></div><small>세로 × 가로. 이 크기 그대로 전시장에 걸립니다.</small></div>
     </div>
     <div class="field"><label for="f-note">작품 해설</label><textarea id="f-note" maxlength="1200" placeholder="이 작품이 전시 주제와 어떻게 이어지는지, 눈여겨볼 점을 적어 주세요."></textarea></div>
     <div class="field"><label for="f-curator">큐레이터 (학생 이름)</label><input id="f-curator" maxlength="40" placeholder="예: 김OO"></div>
@@ -589,7 +596,10 @@ let selectedId = null, editingId = null, pendingImage = null, editingEx = false;
 let planEdit = false, selWallId = null, drag = null, pendingWalls = null, suppressClick = false;
 let moveMode = false, selWorkId = null, workDrag = null, pendingWorks = null, workGroups = {};
 let tab = 'intro';
-const HINT_WALK = '화면을 끌어서 둘러보고, 화면을 누른 뒤 W A S D 또는 방향키로 걸어요. 작품을 누르면 그 앞으로 갑니다.';
+const HINT_KEYS = '화면을 끌어서 둘러보고, 화면을 누른 뒤 W A S D 또는 방향키로 걸어요. 작품을 누르면 그 앞으로 갑니다.';
+const TOUCH = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+const HINT_WALK = TOUCH ? '손가락으로 화면을 끌어서 둘러보고, 오른쪽 아래 화살표로 걸어요. 작품을 누르면 그 앞으로 갑니다.' : HINT_KEYS;
+$('hint').textContent = HINT_WALK;
 const HINT_MOVE = '작품을 끌어서 벽 위 원하는 곳으로 옮겨요. 위아래로도, 다른 벽으로도 옮겨집니다. 빈 곳을 끌면 둘러보기.';
 const PLAN_HELP = '점을 누르면 그 작품 앞으로, 빈 곳을 누르면 그 자리로 이동합니다. 눈금 한 칸은 2 m.';
 const round2 = v => Math.round(v*100)/100;
@@ -791,7 +801,16 @@ function computeLayout(){
     const auto = list.filter(w => !isPinned(w)).sort(byOrder), pinned = list.filter(isPinned);
     const fs = [];
     const cnt = auto.length || (pinned.length ? 0 : 1);
-    for(let k=0;k<cnt;k++) fs.push({along: f.len*(k+1)/(cnt+1) - f.len/2, maxW:clamp(f.len/cnt - .95, .5, 2.6), work:auto[k] || null});
+    const share = clamp(f.len/Math.max(1, cnt) - .95, .5, 2.6);
+    const est = Array.from({length:cnt}, (_, k) => { const r = realOf(auto[k], f); return r ? r.w : share; });
+    const gap = (f.len - est.reduce((a, b) => a + b, 0))/(cnt + 1);
+    let run = -f.len/2;
+    for(let k=0;k<cnt;k++){
+      // works with a real size are spaced by their widths; fall back to even spacing when the wall is crowded
+      const along = gap >= .25 ? (run += gap + est[k]/2) : f.len*(k+1)/(cnt+1) - f.len/2;
+      if(gap >= .25) run += est[k]/2;
+      fs.push({along, maxW:share, work:auto[k] || null});
+    }
     pinned.forEach(w => fs.push({along: clamp(w.at, -f.len/2 + .2, f.len/2 - .2), maxW: Math.max(.5, f.len - .3), work:w, pinned:true}));
     fs.sort((a,b) => a.along - b.along).forEach(s => {
       const w = s.work;
@@ -801,11 +820,30 @@ function computeLayout(){
     });
   });
   return {W, D, faces, faceByKey, pws, wallsById:Object.fromEntries(pws.map(p => [p.id, p])), slots, byId,
-    kiosk:{cx:0, cz:D/2-3.2}, spawn:{x:0, z:D/2-1.1}};
+    kiosk:kioskOf(ex, W, D), spawn:{x:0, z:D/2-1.1}};
+}
+const sizeText = w => Number.isFinite(w?.hcm) && Number.isFinite(w?.wcm) ? `${+w.hcm} × ${+w.wcm} cm` : '';
+function kioskOf(ex, W, D){
+  const q = ex && ex.kiosk && typeof ex.kiosk === 'object' ? ex.kiosk : {};
+  const num = (v, d) => v != null && Number.isFinite(+v) ? +v : d;
+  const deg = normDeg(num(q.rot, 0)), th = deg*Math.PI/180;
+  return {cx:clamp(num(q.x, 0), -W/2 + 1.6, W/2 - 1.6), cz:clamp(num(q.z, D/2 - 3.2), -D/2 + 1, D/2 - 1), deg, th, ux:Math.cos(th), uz:Math.sin(th)};
+}
+/* Real size in metres on a given face, shrunk only when the wall cannot hold it. */
+function realOf(w, f){
+  if(!w || !(w.hcm > 0) || !(w.wcm > 0)) return null;
+  const h = w.hcm/100, wd = w.wcm/100, top = f.wall ? WALL_H : H;
+  const k = Math.min(1, (top - .9)/h, (f.len - .3)/wd);
+  return {w:wd*k, h:h*k, k};
 }
 /* Picture size and centre height on its face; leaves room below for the floor and above for the picture light. */
 function workDims(s, aspect){
   const f = s.face, top = f.wall ? WALL_H : H;
+  const real = realOf(s.work, f);
+  if(real){
+    const y = clamp(s.y == null ? 1.6 : s.y, real.h/2 + .3, top - real.h/2 - .5);
+    return {w:real.w, h:real.h, y, aspect, real:true, shrunk: real.k < .999, scale: real.k};
+  }
   const cap = s.hFix ? f.len - .3 : s.maxW;
   let h = s.hFix || Math.min(1.7, s.maxW/aspect), w = h*aspect;
   if(w > cap){ w = cap; h = w/aspect; }
@@ -915,31 +953,42 @@ function sharedTextures(){
     g.fillStyle = gr; g.fillRect(0, 0, w, h);
   });
 }
-function kioskTex(ex, back){
-  return makeCanvasTex(1080, 880, (g, w, h) => {
+/* Intro panel: group, title, theme and the curatorial intent all on one face.
+   The intent text shrinks to fit; only a very long one is cut, pointing to the 전시 소개 tab. */
+function kioskTex(ex){
+  return makeCanvasTex(1400, 1140, (g, w, h) => {
     g.fillStyle = '#f4f2ec'; g.fillRect(0, 0, w, h);
     g.textBaseline = 'top';
-    const pad = 70, mw = w - pad*2;
-    if(!back){
-      g.fillStyle = '#8a6a2a'; g.font = '500 28px "IBM Plex Mono", monospace';
-      g.fillText(`${ex.group || ''} 기획전`, pad, 70);
-      g.fillStyle = '#1c2220'; g.font = '800 86px "Nanum Myeongjo", serif';
-      const tl = wrapText(g, ex.title || '', mw, 3); tl.forEach((l, i) => g.fillText(l, pad, 130 + i*104));
-      let y = 130 + tl.length*104 + 30;
+    const pad = 84, mw = w - pad*2;
+    let y = 76;
+    g.fillStyle = '#8a6a2a'; g.font = '500 30px "IBM Plex Mono", monospace';
+    g.fillText(`${ex.group || ''} 기획전`, pad, y); y += 56;
+    g.fillStyle = '#1c2220'; g.font = '800 88px "Nanum Myeongjo", serif';
+    const tl = wrapText(g, ex.title || '', mw, 2); tl.forEach((l, i) => g.fillText(l, pad, y + i*104)); y += tl.length*104 + 14;
+    if(ex.theme){
       g.fillStyle = '#3a423f'; g.font = '700 40px "Nanum Myeongjo", serif';
-      const th = wrapText(g, ex.theme || '', mw, 3); th.forEach((l, i) => g.fillText(l, pad, y + i*56));
-      g.fillStyle = '#5d6763'; g.font = '400 26px "IBM Plex Sans KR", sans-serif';
-      if(ex.members) wrapText(g, '참여 · ' + ex.members, mw, 2).forEach((l, i) => g.fillText(l, pad, h - 150 + i*36));
-      g.fillStyle = '#8a6a2a'; g.font = '500 24px "IBM Plex Sans KR", sans-serif';
-      g.fillText('주제 의도는 이 판의 뒷면에 있습니다', pad, h - 70);
-    } else {
-      g.fillStyle = '#8a6a2a'; g.font = '500 28px "IBM Plex Mono", monospace'; g.fillText('주제 의도', pad, 70);
-      g.fillStyle = '#1c2220'; g.font = '800 50px "Nanum Myeongjo", serif';
-      wrapText(g, ex.title || '', mw, 1).forEach(l => g.fillText(l, pad, 120));
-      g.fillStyle = '#2c3431'; g.font = '400 30px "IBM Plex Sans KR", sans-serif';
-      const lines = wrapParas(g, ex.intent || '아직 주제 의도를 적지 않았습니다.', mw, 15);
-      lines.forEach((l, i) => g.fillText(l, pad, 210 + i*42));
+      const th = wrapText(g, ex.theme, mw, 2); th.forEach((l, i) => g.fillText(l, pad, y + i*54)); y += th.length*54 + 14;
     }
+    g.fillStyle = '#c9c3b4'; g.fillRect(pad, y + 8, mw, 2); y += 36;
+    g.fillStyle = '#8a6a2a'; g.font = '600 26px "IBM Plex Sans KR", sans-serif';
+    g.fillText('주제 의도', pad, y); y += 46;
+    const bottom = h - (ex.members ? 120 : 70);
+    const text = ex.intent || '아직 주제 의도를 적지 않았습니다.';
+    let size = 34, lines, lh;
+    for(; size >= 18; size -= 2){
+      g.font = `400 ${size}px "IBM Plex Sans KR", sans-serif`; lh = Math.round(size*1.5);
+      const cap = Math.max(1, Math.floor((bottom - y)/lh));
+      const all = wrapParas(g, text, mw, 999);
+      if(all.length <= cap || size === 18){ lines = all.length <= cap ? all : wrapParas(g, text, mw, cap); break; }
+    }
+    const cut = wrapParas(g, text, mw, 999).length > lines.length;
+    g.fillStyle = ex.intent ? '#2c3431' : '#8a8f8c';
+    lines.forEach((l, i) => g.fillText(l, pad, y + i*lh));
+    if(ex.members){
+      g.fillStyle = '#5d6763'; g.font = '400 26px "IBM Plex Sans KR", sans-serif';
+      g.fillText(wrapText(g, '참여 · ' + ex.members, mw, 1)[0] || '', pad, h - 96);
+    }
+    if(cut){ g.fillStyle = '#8a6a2a'; g.font = '500 22px "IBM Plex Sans KR", sans-serif'; g.fillText('전체 글은 ‘전시 소개’에서 볼 수 있어요', pad, h - 52); }
   });
 }
 function labelTex(slot){
@@ -955,6 +1004,7 @@ function labelTex(slot){
     g.fillText(wrapText(g, w.artist || '', W-48, 1)[0] || '', 24, y); y += 34;
     g.font = '400 21px "IBM Plex Sans KR", sans-serif'; g.fillStyle = '#5d6763';
     g.fillText(wrapText(g, [w.year, w.period].filter(Boolean).join(' · '), W-48, 1)[0] || '', 24, y);
+    if(sizeText(w)){ y += 30; g.fillText(sizeText(w), 24, y); }
   });
 }
 function emptyTex(light){
@@ -1092,12 +1142,14 @@ function buildGallery(){
   });
 
   // intro panel at the entrance: title + theme in front, intent on the back
-  const k = layout.kiosk;
-  box(KIOSK.w, KIOSK.h, .14, base, k.cx, KIOSK.h/2, k.cz);
-  const fp = plane(2.6, 2.12, track(new THREE.MeshBasicMaterial({map:track(kioskTex(ex, false))})));
-  fp.position.set(k.cx, 1.28, k.cz + .071); g.add(fp);
-  const bp = plane(2.6, 2.12, track(new THREE.MeshBasicMaterial({map:track(kioskTex(ex, true))})));
-  bp.position.set(k.cx, 1.28, k.cz - .071); bp.rotation.y = Math.PI; g.add(bp);
+  const k = layout.kiosk, kg = new THREE.Group();
+  kg.position.set(k.cx, 0, k.cz); kg.rotation.y = -k.th; g.add(kg);
+  const kb = new THREE.Mesh(track(new THREE.BoxGeometry(KIOSK.w, KIOSK.h, .14)), base); kb.position.y = KIOSK.h/2; kg.add(kb);
+  const kmat = track(new THREE.MeshBasicMaterial({map:track(kioskTex(ex)), toneMapped:false}));   // same text on both faces
+  const fp = plane(2.6, 2.12, kmat);
+  fp.position.set(0, 1.28, .071); kg.add(fp);
+  const bp = plane(2.6, 2.12, kmat);
+  bp.position.set(0, 1.28, -.071); bp.rotation.y = Math.PI; kg.add(bp);
 
   workGroups = {};
   layout.slots.forEach(s => {
@@ -1110,12 +1162,22 @@ function buildGallery(){
       const {w, h, y} = s.dims = workDims(s, a);
       grp.position.y = y;
       const lit = s.work.lamp !== false;
-      const fr = new THREE.Mesh(track(new THREE.BoxGeometry(w+.16, h+.16, .06)), frameMat); grp.add(fr);
+      const fb = clamp(Math.min(w, h)*.06, .02, .08);
+      const fr = new THREE.Mesh(track(new THREE.BoxGeometry(w + fb*2, h + fb*2, .06)), frameMat); grp.add(fr);
+      let pw = w, ph = h;
+      if(s.dims.real && e && e.ready){
+        const ia = e.aspect, ba = w/h;
+        if(Math.abs(ia/ba - 1) > .03){
+          if(ia > ba){ pw = w; ph = w/ia; } else { ph = h; pw = h*ia; }
+          const mat = plane(w, h, track(new THREE.MeshStandardMaterial({color:0xf1ede4, roughness:.95}))); mat.position.z = .031; grp.add(mat);
+          mat.userData.workId = s.work.id; clickables.push(mat);
+        }
+      }
       // lit material: the light brightens it; a little self-light keeps it readable when lights are off
       const pmat = e && e.ready
         ? track(new THREE.MeshStandardMaterial({map:e.tex, emissive:0xffffff, emissiveMap:e.tex, emissiveIntensity: lt.spots && lit ? .15 : .4, roughness:.9}))
         : track(new THREE.MeshBasicMaterial({color:0x3a3d3c}));
-      const pic = plane(w, h, pmat); pic.position.z = .032; grp.add(pic);
+      const pic = plane(pw, ph, pmat); pic.position.z = .032; grp.add(pic);
       const realLight = lit && (lt.style === 'lamp' ? addLamp(grp, w, h) : addSpot(s, w, h, y));
       if(lt.spots && lit && !realLight){ const glow = plane(w+2.4, h+2.4, glowMat); glow.position.set(0, .25, -.05); grp.add(glow); }
       const lab = plane(.5, .28, track(new THREE.MeshBasicMaterial({map:track(labelTex(s))}))); lab.position.set(w/2+.42, Math.max(-.45, -h/2 + .14), -.04); grp.add(lab);
@@ -1173,7 +1235,8 @@ function blocked(x, z){
   if(!layout) return false;
   if(Math.abs(x) > layout.W/2 - .45 || Math.abs(z) > layout.D/2 - .45) return true;
   for(const pw of layout.pws) if(segHit(x, z, pw.cx, pw.cz, pw.ux, pw.uz, pw.len, .1)) return true;
-  return segHit(x, z, layout.kiosk.cx, layout.kiosk.cz, 1, 0, KIOSK.w, .07);
+  const k = layout.kiosk;
+  return segHit(x, z, k.cx, k.cz, k.ux, k.uz, KIOSK.w, .07);
 }
 function loop(now){
   requestAnimationFrame(loop);
@@ -1208,7 +1271,10 @@ function goTo(x, z, y2, dur){
 function goToWork(id, open = true){
   const s = layout && layout.byId[id]; if(!s) return;
   let px = s.x, pz = s.z;
-  for(const d of [2.8, 2.1, 1.5]){ px = s.x + s.nx*d; pz = s.z + s.nz*d; if(!blocked(px, pz)) break; }
+  // stand far enough back to take in the whole work: big canvases need more room, small ones less
+  const dm = s.dims || {w:1, h:1};
+  const ideal = clamp(Math.max(dm.h*1.15, dm.w*.8) + .5, 1.6, 9);
+  for(const d of [ideal, ideal*.75, 2.1, 1.5]){ px = s.x + s.nx*d; pz = s.z + s.nz*d; if(!blocked(px, pz)) break; }
   goTo(px, pz, Math.atan2(s.nx, s.nz));
   selectedId = id; if(open) renderInfo(); markSelected();
 }
@@ -1306,7 +1372,8 @@ function renderInfo(){
   const x = el('button', 'x', '×'); x.setAttribute('aria-label', '닫기'); x.onclick = () => { selectedId = null; renderInfo(); markSelected(); };
   box.append(x, el('div', 'no', `CAT. ${String(s.no).padStart(2, '0')} · ${s.face.name}`), el('h3', null, w.title || '제목 없음'));
   box.append(el('p', 'meta', [w.artist, w.year].filter(Boolean).join(', ')));
-  const m2 = [w.period, w.medium, w.place].filter(Boolean).join(' · '); if(m2) box.append(el('p', 'meta', m2));
+  const m2 = [w.period, w.medium].filter(Boolean).join(' · '); if(m2) box.append(el('p', 'meta', m2));
+  if(sizeText(w)) box.append(el('p', 'meta', '크기 ' + sizeText(w) + (s.dims && s.dims.shrunk ? ' · 벽에 맞게 줄여 걸었어요' : '')));
   if(w.note) box.append(el('p', 'note', w.note));
   if(w.curator) box.append(el('p', 'curator', '큐레이터 · ' + w.curator));
   if(!readOnly){
@@ -1344,9 +1411,12 @@ function renderPlan(){
   ft('북쪽 벽', Wp/2, -8); ft('남쪽 벽 · 입구', Wp/2, Dp + 16);
   ft('서쪽 벽', -12, Dp/2, 'middle', -90); ft('동쪽 벽', Wp + 12, Dp/2, 'middle', 90);
   // intro panel
-  const k = layout.kiosk;
-  sv('rect', {x:gx(k.cx - KIOSK.w/2), y:gy(k.cz) - 2, width:KIOSK.w*PS, height:4, class:'kiosk'}, plan);
-  const kt = sv('text', {x:gx(k.cx), y:gy(k.cz) + 12, class:'face-t', 'text-anchor':'middle'}, plan); kt.textContent = '소개판';
+  const k = layout.kiosk, KL = KIOSK.w*PS;
+  const kgp = sv('g', {class:'pwall' + (selWallId === 'kiosk' ? ' sel' : ''), 'data-kiosk':'1',
+    transform:`translate(${gx(k.cx)} ${gy(k.cz)}) rotate(${k.deg})`}, plan);
+  sv('rect', {x:-KL/2-3, y:-10, width:KL+6, height:20, rx:3, class:'hit'}, kgp);
+  sv('rect', {x:-KL/2, y:-2, width:KL, height:4, class:'kiosk'}, kgp);
+  const kt = sv('text', {x:0, y:13, class:'face-t', 'text-anchor':'middle'}, kgp); kt.textContent = planEdit ? '소개판 앞면 ▾' : '소개판';
   // free walls; A face = local +y in this rotated frame
   layout.pws.forEach(pw => {
     const L = pw.len*PS;
@@ -1419,6 +1489,12 @@ plan.addEventListener('pointerdown', e => {
   }
   if(!planEdit || readOnly || !layout) return;
   const g = e.target.closest('.pwall'); if(!g) return;
+  if(g.dataset.kiosk){
+    e.preventDefault(); selWallId = 'kiosk';
+    const p = planPt(e), k = layout.kiosk;
+    drag = {id:'kiosk', ox:p.x - k.cx, oz:p.z - k.cz, moved:false};
+    plan.setPointerCapture(e.pointerId); renderPlan(); syncWallCtl(); return;
+  }
   const pw = layout.wallsById[g.dataset.wall]; if(!pw) return;
   e.preventDefault();
   selWallId = pw.id;
@@ -1433,9 +1509,15 @@ plan.addEventListener('pointermove', e => {
     return;
   }
   if(!drag) return;
+  const snap = v => Math.round(v*4)/4;
+  if(drag.id === 'kiosk'){
+    const ex = curEx(); if(!ex) return;
+    const p = planPt(e), k = layout.kiosk;
+    ex.kiosk = {x:snap(clamp(p.x - drag.ox, -layout.W/2 + 1.6, layout.W/2 - 1.6)), z:snap(clamp(p.z - drag.oz, -layout.D/2 + 1, layout.D/2 - 1)), rot:k.deg};
+    drag.moved = true; layout = computeLayout(); renderPlan(); return;
+  }
   const w = walls.find(w => w.id === drag.id); if(!w) return;
   const p = planPt(e);
-  const snap = v => Math.round(v*4)/4;
   w.x = snap(clamp(p.x - drag.ox, -layout.W/2 + .6, layout.W/2 - .6));
   w.z = snap(clamp(p.z - drag.oz, -layout.D/2 + .6, layout.D/2 - .6));
   drag.moved = true;
@@ -1444,7 +1526,7 @@ plan.addEventListener('pointermove', e => {
 async function endDrag(){
   if(!drag) return;
   const d = drag; drag = null;
-  if(d.moved){ suppressClick = true; await saveWall(d.id); }
+  if(d.moved){ suppressClick = true; if(d.id === 'kiosk') saveKiosk(); else await saveWall(d.id); }
   if(pendingWalls){ walls = pendingWalls; pendingWalls = null; }
   refresh();
 }
@@ -1502,6 +1584,8 @@ function syncWorkCtl(){
   $('workSelInfo').textContent = `CAT. ${String(s.no).padStart(2, '0')} ${w.title || '제목 없음'} · ${s.face.name}${s.pinned ? '' : ' · 자동 배치'}`;
   if(document.activeElement !== $('k-y')) $('k-y').value = dims.y;
   $('k-yOut').textContent = dims.y.toFixed(2) + ' m';
+  $('k-sz').closest('label').hidden = !!dims.real;
+  if(dims.real) $('workSelInfo').textContent += ` · 실제 크기 ${sizeText(w)}${dims.shrunk ? ' (벽에 맞게 축소)' : ''}`;
   if(document.activeElement !== $('k-sz')) $('k-sz').value = dims.h;
   $('k-szOut').textContent = (Number.isFinite(w.sz) ? '' : '자동 ') + dims.h.toFixed(2) + ' m';
   const lp = $('k-lamp'); lp.replaceChildren();
@@ -1546,11 +1630,24 @@ async function saveWall(id){
   try{ await db.doc(exPath('walls', id)).set(data); }
   catch(err){ showStatus(err && err.code === 'invalid_argument' ? '벽을 옮길 권한이 없습니다. ‘이 전시 편집하기’에서 비밀번호를 다시 넣어 주세요.' : '벽 위치를 저장하지 못했습니다. 다시 옮겨 주세요.'); }
 }
+function saveKiosk(){
+  const k = layout.kiosk;
+  setDeco({kiosk:{x:k.cx, z:k.cz, rot:k.deg}}, true);
+}
 function syncWallCtl(){
+  const isK = selWallId === 'kiosk' && layout;
+  $('kioskCtl').hidden = !isK;
+  if(isK){
+    $('wallCtl').hidden = true;
+    $('wallSelInfo').textContent = '소개판 · 끌어서 옮기고, 방향을 돌려 앞면(전시명)이 관람객 쪽을 보게 하세요.';
+    if(document.activeElement !== $('ki-rot')) $('ki-rot').value = layout.kiosk.deg;
+    $('ki-rotOut').textContent = layout.kiosk.deg + '°';
+    return;
+  }
   const pw = selWallId && layout && layout.wallsById[selWallId];
   if(selWallId && !pw) selWallId = null;
   $('wallCtl').hidden = !pw;
-  if(!pw){ $('wallSelInfo').textContent = '+ 벽 세우기를 누르면 3D 화면에서 지금 바라보는 곳에 벽이 생깁니다. 벽을 누르면 고르고, 끌어서 옮길 수 있어요.'; return; }
+  if(!pw){ $('wallSelInfo').textContent = '+ 벽 세우기를 누르면 3D 화면에서 지금 바라보는 곳에 벽이 생깁니다. 벽이나 소개판을 누르면 고르고, 끌어서 옮길 수 있어요.'; return; }
   const n = layout.slots.filter(s => s.face.wall === pw && s.work).length;
   $('wallSelInfo').textContent = `${pw.label} · 작품 ${n}점`;
   $('w-len').value = pw.len; $('w-lenOut').textContent = pw.len.toFixed(1) + ' m';
@@ -1588,6 +1685,16 @@ function wallInput(field, val, done){
   if(field === 'color') scheduleRebuild();
   if(done){ saveWall(w.id); refresh(); }
 }
+function kioskRot(deg, done){
+  const ex = curEx(); if(!ex || !layout) return;
+  const k = layout.kiosk;
+  ex.kiosk = {x:k.cx, z:k.cz, rot:normDeg(deg)};
+  layout = computeLayout(); renderPlan(); syncWallCtl(); scheduleRebuild();
+  if(done) saveKiosk();
+}
+$('ki-rot').addEventListener('input', e => kioskRot(+e.target.value));
+$('ki-rot').addEventListener('change', e => kioskRot(+e.target.value, true));
+$('ki-reset').onclick = () => { setDeco({kiosk:null}, true); layout = computeLayout(); renderPlan(); syncWallCtl(); };
 $('w-color').addEventListener('input', e => wallInput('color', e.target.value));
 $('w-color').addEventListener('change', e => wallInput('color', e.target.value, true));
 $('w-colorReset').onclick = () => wallInput('color', null, true);
@@ -1674,7 +1781,7 @@ function setPlanEdit(on){
   $('wallBar').hidden = !on;
   plan.classList.toggle('editing', on);
   $('planHelp').textContent = on
-    ? '벽을 끌어서 옮기고 길이와 방향을 바꿔 보세요. 0.25 m 단위로 맞춰집니다. A·B는 벽의 두 면입니다. 바꾼 내용은 모두에게 바로 보입니다.'
+    ? '벽과 소개판을 끌어서 옮기고 방향을 바꿔 보세요. 0.25 m 단위로 맞춰집니다. A·B는 벽의 두 면입니다. 바꾼 내용은 모두에게 바로 보입니다.'
     : '점을 누르면 그 작품 앞으로, 빈 곳을 누르면 그 자리로 이동합니다. 눈금 한 칸은 2 m.';
   if(!on) selWallId = null;
   renderPlan(); syncWallCtl();
@@ -1710,6 +1817,7 @@ function renderCatalog(){
     if(src){ const im = new Image(); im.src = src; im.alt = w.title || ''; im.loading = 'lazy'; th.append(im); }
     c.append(th, el('span', 'no', `CAT. ${String(s.no).padStart(2, '0')} · ${s.face.name}`), el('span', 't', w.title || '제목 없음'),
       el('span', 'a', [w.artist, w.year].filter(Boolean).join(', ')));
+    if(sizeText(w)) c.append(el('span', 'a', sizeText(w)));
     if(w.curator) c.append(el('span', 'a', '큐레이터 · ' + w.curator));
     c.onclick = () => { setTab('hall'); goToWork(w.id); vp.scrollIntoView({behavior:'smooth', block:'center'}); };
     root.append(c);
@@ -1891,7 +1999,7 @@ $('exForm').addEventListener('submit', async e => {
     size:(document.querySelector('input[name=x-size]:checked') || {}).value || 'm',
     wallColor: prev?.wallColor || '#e9e7e2',
     floorStyle: prev?.floorStyle || 'wood', floorColor: prev?.floorColor || '#8a6446',
-    spotlights: prev ? prev.spotlights !== false : true, ambient: prev?.ambient ?? .6, lightTone: prev?.lightTone || 'warm', lightStyle: prev?.lightStyle || 'lamp',
+    spotlights: prev ? prev.spotlights !== false : true, ambient: prev?.ambient ?? .6, lightTone: prev?.lightTone || 'warm', lightStyle: prev?.lightStyle || 'lamp', kiosk: prev?.kiosk || null,
     owner: prev ? (prev.owner || null) : myId, createdAt: prev ? (prev.createdAt || now) : now, updatedAt: now,
   };
   const btn = $('exSave'); btn.disabled = true;
@@ -1947,7 +2055,8 @@ function openForm(w, spot){
   $('f-title').value = w?.title || ''; $('f-artist').value = w?.artist || ''; $('f-year').value = w?.year || '';
   $('f-period').value = w?.period || ''; $('f-order').value = w?.order ?? '';
   fillSpots(s ? s.face.key : spot);
-  $('f-medium').value = w?.medium || ''; $('f-place').value = w?.place || ''; $('f-note').value = w?.note || '';
+  $('f-medium').value = w?.medium || ''; $('f-note').value = w?.note || '';
+  $('f-hcm').value = Number.isFinite(w?.hcm) ? w.hcm : ''; $('f-wcm').value = Number.isFinite(w?.wcm) ? w.wcm : '';
   $('f-curator').value = w?.curator || (() => { try{ return localStorage.getItem('curatorName') || ''; }catch(e){ return ''; } })();
   const src = w && safeImg(w.image);
   $('dropImg').hidden = !src; $('dropPh').hidden = !!src; if(src) $('dropImg').src = src;
@@ -2002,6 +2111,10 @@ $('form').addEventListener('submit', async e => {
   const title = $('f-title').value.trim(), artist = $('f-artist').value.trim();
   const existing = editingId ? works.find(w => w.id === editingId) : null;
   if(!title || !artist){ formErr('작품명과 작가를 적어 주세요.'); return; }
+  const hcmRaw = $('f-hcm').value.trim(), wcmRaw = $('f-wcm').value.trim();
+  const hcm = hcmRaw === '' ? null : +hcmRaw, wcm = wcmRaw === '' ? null : +wcmRaw;
+  if((hcm == null) !== (wcm == null)){ formErr('작품 크기는 세로와 가로를 함께 적어 주세요.'); return; }
+  if(hcm != null && !(hcm >= 1 && hcm <= 2000 && wcm >= 1 && wcm <= 2000)){ formErr('작품 크기는 1 ~ 2000 cm 사이로 적어 주세요.'); return; }
   if(!pendingImage && !existing){ formErr('작품 이미지를 골라 주세요.'); return; }
   const curator = $('f-curator').value.trim();
   try{ localStorage.setItem('curatorName', curator); }catch(_){}
@@ -2018,7 +2131,8 @@ $('form').addEventListener('submit', async e => {
     ...keep,
     title:str(title, 80), artist:str(artist, 60), year:str($('f-year').value.trim(), 30), period:str($('f-period').value.trim(), 40),
     spot:$('f-spot').value, order: ord === '' ? null : clamp(Math.round(+ord) || 1, 1, 99),
-    medium:str($('f-medium').value.trim(), 60), place:str($('f-place').value.trim(), 60),
+    medium:str($('f-medium').value.trim(), 60),
+    hcm: hcm == null ? null : Math.round(hcm*10)/10, wcm: wcm == null ? null : Math.round(wcm*10)/10,
     note:str($('f-note').value.trim(), 1200), curator:str(curator, 40),
     image: pendingImage ? pendingImage.dataUrl : existing.image,
     aspect: pendingImage ? pendingImage.aspect : (existing.aspect || .8),
@@ -2036,7 +2150,9 @@ $('form').addEventListener('submit', async e => {
       const ref = id ? db.doc(exPath('works', id)) : db.collection(exPath('works')).doc();
       id = ref.id; await ref.set(data);
     }
-    closeForm(); setTab('hall'); setTimeout(() => goToWork(id), 150);
+    closeForm(); setTab('hall');
+    const tryGo = n => { if(layout && layout.byId[id] && layout.byId[id].dims) goToWork(id); else if(n > 0) setTimeout(() => tryGo(n - 1), 200); };
+    setTimeout(() => tryGo(20), 150);
   }catch(err){
     const c = err && err.code;
     if(c === 'invalid_argument') formErr('작품을 올릴 권한이 없거나 이미지가 너무 큽니다. 선생님께 편집 권한을 요청하거나 더 작은 이미지로 시도해 주세요.');
