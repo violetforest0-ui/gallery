@@ -124,6 +124,21 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #plan .wall{stroke:var(--ink);stroke-width:4;fill:none}
 #plan .face-t{font-family:var(--mono);font-size:9px;fill:var(--muted)}
 #plan .kiosk{fill:var(--muted)}
+#plan .arrow-g .shape{stroke:var(--surface);stroke-width:1}
+#plan.editing .arrow-g{cursor:move}
+#plan .arrow-g.sel .shape{stroke:var(--gilt);stroke-width:2.5}
+#plan .door-gap{fill:var(--surface)}
+#plan .door-mark{stroke:var(--accent);stroke-width:2.5;fill:none}
+#plan .door-mark.out{stroke:#2f8a5a}
+#plan .door-t{font-family:var(--body);font-size:9px;font-weight:600;fill:var(--accent);text-anchor:middle;dominant-baseline:central}
+#plan .door-t.out{fill:#2f8a5a}
+#plan.editing .door-g{cursor:move}
+#plan .door-g .hit{fill:transparent}
+.numin{width:74px;padding:4px 6px;font-variant-numeric:tabular-nums}
+.btn.sm{padding:4px 8px;font-size:12.5px}
+.doorctl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;flex-basis:100%;border-bottom:1px solid var(--line);padding-bottom:10px}
+.doorctl select{width:auto;padding:4px 8px}
+.doorctl .msg{flex-basis:100%;font-size:12.5px}
 .size-row{display:flex;align-items:center;gap:6px}
 .size-row input{min-width:0}
 .size-row span{color:var(--muted)}
@@ -340,17 +355,35 @@ textarea{min-height:110px;resize:vertical}
             <span class="msg" style="color:var(--muted);font-size:13px">바꾸면 3D 전시장에 바로 보이고, 모두에게 저장됩니다. 세운 벽 하나만 다른 색으로 하려면 ‘벽 세우기’에서 그 벽을 고르세요.</span>
           </div>
           <div class="wallbar" id="wallBar" hidden>
+            <div class="doorctl" id="doorCtl">
+              <span class="rng"><b>입구</b> <select id="dr-inWall" aria-label="입구가 있는 벽"></select> 왼쪽 끝에서 <input type="number" class="numin" id="dr-inAt" step="0.1" aria-label="입구 위치 (m)"> m</span>
+              <span class="rng"><b>출구</b> <select id="dr-outWall" aria-label="출구가 있는 벽"></select> <span id="dr-outAtWrap">왼쪽 끝에서 <input type="number" class="numin" id="dr-outAt" step="0.1" aria-label="출구 위치 (m)"> m</span></span>
+              <span class="msg">‘왼쪽 끝’은 전시장 안에서 그 벽을 바라볼 때 기준입니다. 도면의 입구·출구 표시를 끌어도 옮겨집니다.</span>
+            </div>
             <button class="btn primary" id="addWallBtn">+ 벽 세우기</button>
+            <button class="btn" id="addArrowBtn">+ 바닥 화살표</button>
             <span class="msg" id="wallSelInfo"></span>
             <div class="wallctl" id="wallCtl" hidden>
-              <label class="rng" for="w-len">길이 <input type="range" id="w-len" min="1.5" max="10" step="0.5"><output id="w-lenOut"></output></label>
-              <label class="rng" for="w-rot">방향 <input type="range" id="w-rot" min="0" max="345" step="15"><output id="w-rotOut"></output></label>
+              <span class="rng"><label for="w-len">길이</label> <input type="range" id="w-len" min="1.5" max="10" step="0.5" aria-label="길이 막대"> <input type="number" class="numin" id="w-lenN" min="1.5" max="10" step="0.1" aria-label="길이 (m)"> m</span>
+              <span class="rng"><label for="w-rot">방향</label> <input type="range" id="w-rot" min="0" max="355" step="5" aria-label="방향 막대"> <input type="number" class="numin" id="w-rotN" min="0" max="359" step="1" aria-label="방향 (도)"> °
+                <button type="button" class="btn sm" data-wrot="0">가로 0°</button><button type="button" class="btn sm" data-wrot="90">세로 90°</button></span>
+              <span class="rng">가운데 위치 · 서쪽 벽에서 <input type="number" class="numin" id="w-xN" step="0.1" aria-label="서쪽 벽에서 (m)"> m, 북쪽 벽에서 <input type="number" class="numin" id="w-zN" step="0.1" aria-label="북쪽 벽에서 (m)"> m</span>
               <label class="picker" for="w-color"><input type="color" id="w-color"> 이 벽 색</label>
               <button type="button" class="btn" id="w-colorReset">전시장 벽 색과 같게</button>
               <span id="w-delWrap"></span>
             </div>
+            <div class="wallctl" id="arrowCtl" hidden>
+              <span class="rng"><label for="ar-rot">가리키는 방향</label> <input type="range" id="ar-rot" min="0" max="355" step="5" aria-label="방향 막대"> <input type="number" class="numin" id="ar-rotN" min="0" max="359" step="1" aria-label="방향 (도)"> °
+                <button type="button" class="btn sm" data-arot="0">↑ 북</button><button type="button" class="btn sm" data-arot="90">→ 동</button><button type="button" class="btn sm" data-arot="180">↓ 남</button><button type="button" class="btn sm" data-arot="270">← 서</button></span>
+              <span class="rng">가운데 위치 · 서쪽 벽에서 <input type="number" class="numin" id="ar-xN" step="0.1" aria-label="서쪽 벽에서 (m)"> m, 북쪽 벽에서 <input type="number" class="numin" id="ar-zN" step="0.1" aria-label="북쪽 벽에서 (m)"> m</span>
+              <span class="rng"><label for="ar-size">크기</label> <select id="ar-size"><option value="0.25">작게</option><option value="0.4">보통</option><option value="0.6">크게</option></select></span>
+              <label class="picker" for="ar-color"><input type="color" id="ar-color"> 색</label>
+              <button type="button" class="btn" id="ar-dup">하나 더 (같은 방향)</button>
+              <button type="button" class="btn danger" id="ar-del">떼기</button>
+            </div>
             <div class="wallctl" id="kioskCtl" hidden>
-              <label class="rng" for="ki-rot">방향 <input type="range" id="ki-rot" min="0" max="345" step="15"><output id="ki-rotOut"></output></label>
+              <span class="rng"><label for="ki-rot">방향</label> <input type="range" id="ki-rot" min="0" max="355" step="5" aria-label="방향 막대"> <input type="number" class="numin" id="ki-rotN" min="0" max="359" step="1" aria-label="방향 (도)"> °</span>
+              <span class="rng">가운데 위치 · 서쪽 벽에서 <input type="number" class="numin" id="ki-xN" step="0.1" aria-label="서쪽 벽에서 (m)"> m, 북쪽 벽에서 <input type="number" class="numin" id="ki-zN" step="0.1" aria-label="북쪽 벽에서 (m)"> m</span>
               <button type="button" class="btn" id="ki-reset">입구 앞 처음 자리로</button>
             </div>
           </div>
@@ -484,6 +517,8 @@ const floorOf = ex => ({
 });
 const H = 4.2, EYE = 1.6, WALL_H = 3, MAX_WALLS = 20, PS = 12;
 const KIOSK = {w:2.8, h:2.4};
+const DOOR = {w:2, h:2.6};
+const WALL_NAMES = {N:'북쪽 벽', E:'동쪽 벽', S:'남쪽 벽', W:'서쪽 벽'};
 const $ = id => document.getElementById(id);
 
 let exList = [], exReady = false;
@@ -791,6 +826,9 @@ function computeLayout(){
   }));
   faces.forEach(f => { f.ux = f.nz; f.uz = -f.nx; });
   const faceByKey = Object.fromEntries(faces.map(f => [f.key, f]));
+  const doors = doorsOf(ex, faceByKey);
+  const doorSpans = f => [doors.ent, doors.ext].filter(d => d && d.face === f)
+    .map(d => ({a:d.at - DOOR.w/2 - .4, b:d.at + DOOR.w/2 + .4})).sort((p, q) => p.a - q.a);
   const spotOf = w => faceByKey[w.spot] ? w.spot : 'N';
   /* A work with a numeric `at` is pinned where a student dragged it (metres from the face centre);
      the rest are spread evenly along the face as before. `y` (centre height) and `sz` (height) are optional for any work. */
@@ -801,15 +839,19 @@ function computeLayout(){
     const auto = list.filter(w => !isPinned(w)).sort(byOrder), pinned = list.filter(isPinned);
     const fs = [];
     const cnt = auto.length || (pinned.length ? 0 : 1);
-    const share = clamp(f.len/Math.max(1, cnt) - .95, .5, 2.6);
+    // doorways are left clear: works are spread over the wall length that remains
+    const spans = doorSpans(f);
+    const L = Math.max(1, f.len - spans.reduce((t, sp) => t + (sp.b - sp.a), 0));
+    const toActual = (v, half) => { let x = -f.len/2 + v; for(const sp of spans) if(x + half > sp.a) x = Math.max(x + sp.b - sp.a, sp.b + half); return Math.min(x, f.len/2 - half); };
+    const share = clamp(L/Math.max(1, cnt) - .95, .5, 2.6);
     const est = Array.from({length:cnt}, (_, k) => { const r = realOf(auto[k], f); return r ? r.w : share; });
-    const gap = (f.len - est.reduce((a, b) => a + b, 0))/(cnt + 1);
-    let run = -f.len/2;
+    const gap = (L - est.reduce((a, b) => a + b, 0))/(cnt + 1);
+    let run = 0;
     for(let k=0;k<cnt;k++){
       // works with a real size are spaced by their widths; fall back to even spacing when the wall is crowded
-      const along = gap >= .25 ? (run += gap + est[k]/2) : f.len*(k+1)/(cnt+1) - f.len/2;
+      const v = gap >= .25 ? (run += gap + est[k]/2) : L*(k+1)/(cnt+1);
       if(gap >= .25) run += est[k]/2;
-      fs.push({along, maxW:share, work:auto[k] || null});
+      fs.push({along:toActual(v, auto[k] ? est[k]/2 : .55), maxW:share, work:auto[k] || null});
     }
     pinned.forEach(w => fs.push({along: clamp(w.at, -f.len/2 + .2, f.len/2 - .2), maxW: Math.max(.5, f.len - .3), work:w, pinned:true}));
     fs.sort((a,b) => a.along - b.along).forEach(s => {
@@ -820,14 +862,38 @@ function computeLayout(){
     });
   });
   return {W, D, faces, faceByKey, pws, wallsById:Object.fromEntries(pws.map(p => [p.id, p])), slots, byId,
-    kiosk:kioskOf(ex, W, D), spawn:{x:0, z:D/2-1.1}};
+    kiosk:kioskOf(ex, W, D, doors.ent), doors, arrows:arrowsOf(ex, W, D),
+    spawn:{x:doors.ent.x + doors.ent.face.nx*1.3, z:doors.ent.z + doors.ent.face.nz*1.3, yaw:Math.atan2(-doors.ent.face.nx, -doors.ent.face.nz)}};
 }
 const sizeText = w => Number.isFinite(w?.hcm) && Number.isFinite(w?.wcm) ? `${+w.hcm} × ${+w.wcm} cm` : '';
-function kioskOf(ex, W, D){
+/* Floor stickers: arrows that show the visiting route. rot = compass degrees the arrow points to (0 north, 90 east). */
+const MAX_ARROWS = 40;
+function arrowsOf(ex, W, D){
+  const list = ex && Array.isArray(ex.arrows) ? ex.arrows : [];
+  return list.filter(a => a && typeof a.id === 'string').slice(0, MAX_ARROWS).map(a => ({
+    id:a.id, x:clamp(+a.x || 0, -W/2 + .4, W/2 - .4), z:clamp(+a.z || 0, -D/2 + .4, D/2 - .4),
+    rot:normDeg(+a.rot || 0), size:[.25, .4, .6].includes(+a.size) ? +a.size : .4,
+    color:isHex(a.color) ? a.color.toLowerCase() : '#1f4d3f'}));
+}
+/* Entrance (always) and exit (optional) sit on the outer walls: {wall:'N'|'E'|'S'|'W', at: metres from that wall's centre}. */
+function doorsOf(ex, faceByKey){
+  const d = ex && ex.doors && typeof ex.doors === 'object' ? ex.doors : {};
+  const mk = (q, kind) => {
+    const f = faceByKey[q && WALL_NAMES[q.wall] ? q.wall : 'S'];
+    const lim = Math.max(0, f.len/2 - DOOR.w/2 - .3);
+    const at = clamp(q && q.at != null && Number.isFinite(+q.at) ? +q.at : 0, -lim, lim);
+    return {kind, face:f, at, x:f.cx + f.ux*at, z:f.cz + f.uz*at};
+  };
+  return {ent: mk(d.in, 'in'), ext: d.out && WALL_NAMES[d.out.wall] ? mk(d.out, 'out') : null};
+}
+/* Intro panel: where the class put it, or by default a few steps inside the entrance, facing it. */
+function kioskOf(ex, W, D, ent){
   const q = ex && ex.kiosk && typeof ex.kiosk === 'object' ? ex.kiosk : {};
   const num = (v, d) => v != null && Number.isFinite(+v) ? +v : d;
-  const deg = normDeg(num(q.rot, 0)), th = deg*Math.PI/180;
-  return {cx:clamp(num(q.x, 0), -W/2 + 1.6, W/2 - 1.6), cz:clamp(num(q.z, D/2 - 3.2), -D/2 + 1, D/2 - 1), deg, th, ux:Math.cos(th), uz:Math.sin(th)};
+  const n = ent ? ent.face : {nx:0, nz:-1}, ex0 = ent ? ent.x : 0, ez0 = ent ? ent.z : D/2;
+  const defDeg = normDeg(Math.atan2(n.nx, -n.nz)*180/Math.PI);
+  const deg = normDeg(num(q.rot, defDeg)), th = deg*Math.PI/180;
+  return {cx:clamp(num(q.x, ex0 + n.nx*3.2), -W/2 + 1.6, W/2 - 1.6), cz:clamp(num(q.z, ez0 + n.nz*3.2), -D/2 + 1, D/2 - 1), deg, th, ux:Math.cos(th), uz:Math.sin(th)};
 }
 /* Real size in metres on a given face, shrunk only when the wall cannot hold it. */
 function realOf(w, f){
@@ -1069,6 +1135,40 @@ function buildGallery(){
   box(.2, H, D, wm, -W/2-.1, H/2, 0); box(.2, H, D, wm, W/2+.1, H/2, 0);
   box(W, .14, .04, base, 0, .07, -D/2+.02); box(W, .14, .04, base, 0, .07, D/2-.02);
   box(.04, .14, D, base, -W/2+.02, .07, 0); box(.04, .14, D, base, W/2-.02, .07, 0);
+
+  // floor arrow stickers
+  const arrowTex = {};
+  layout.arrows.forEach(a => {
+    const t = arrowTex[a.color] || (arrowTex[a.color] = track(makeCanvasTex(256, 256, (c, w, h) => {
+      c.beginPath(); c.moveTo(w/2, 14); c.lineTo(w - 26, 128); c.lineTo(w/2 + 40, 128); c.lineTo(w/2 + 40, h - 18);
+      c.lineTo(w/2 - 40, h - 18); c.lineTo(w/2 - 40, 128); c.lineTo(26, 128); c.closePath();
+      c.fillStyle = a.color; c.fill(); c.lineJoin = 'round'; c.lineWidth = 8; c.strokeStyle = 'rgba(255,255,255,.85)'; c.stroke();
+    })));
+    const m = new THREE.Mesh(track(new THREE.PlaneGeometry(a.size, a.size)), track(new THREE.MeshStandardMaterial({map:t, transparent:true, depthWrite:false,
+      roughness:.7, polygonOffset:true, polygonOffsetFactor:-2})));
+    m.rotation.order = 'YXZ'; m.rotation.set(-Math.PI/2, -a.rot*Math.PI/180, 0); m.position.set(a.x, .006, a.z); g.add(m);
+  });
+
+  // entrance / exit: a dark doorway with a frame and a lit sign above
+  const doorFrame = track(new THREE.MeshStandardMaterial({color:0x2a2b2b, roughness:.6, metalness:.3}));
+  const voidMat = track(new THREE.MeshBasicMaterial({map:track(makeCanvasTex(64, 256, (c, w, h) => {
+    const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#050606'); gr.addColorStop(1, '#1d1f1f'); c.fillStyle = gr; c.fillRect(0, 0, w, h); }))}));
+  [layout.doors.ent, layout.doors.ext].forEach(dr => {
+    if(!dr) return;
+    const f = dr.face, dg = new THREE.Group();
+    dg.position.set(dr.x + f.nx*.012, 0, dr.z + f.nz*.012); dg.rotation.y = Math.atan2(f.nx, f.nz); g.add(dg);
+    const op = plane(DOOR.w, DOOR.h, voidMat); op.position.y = DOOR.h/2; dg.add(op);
+    [-1, 1].forEach(sd => { const j = new THREE.Mesh(track(new THREE.BoxGeometry(.09, DOOR.h + .09, .08)), doorFrame); j.position.set(sd*(DOOR.w/2 + .045), (DOOR.h + .09)/2, .02); dg.add(j); });
+    const lin = new THREE.Mesh(track(new THREE.BoxGeometry(DOOR.w + .18, .09, .08)), doorFrame); lin.position.set(0, DOOR.h + .045, .02); dg.add(lin);
+    const out = dr.kind === 'out';
+    const sign = plane(1.2, .36, track(new THREE.MeshBasicMaterial({toneMapped:false, map:track(makeCanvasTex(480, 144, (c, w, h) => {
+      c.fillStyle = out ? '#1f7a4d' : '#1c2220'; c.fillRect(0, 0, w, h);
+      c.fillStyle = '#ffffff'; c.textBaseline = 'middle'; c.textAlign = 'center';
+      c.font = '700 60px "IBM Plex Sans KR", sans-serif'; c.fillText(out ? '출구' : '입구', w/2 - 70, h/2 + 2);
+      c.font = '500 30px "IBM Plex Mono", monospace'; c.fillText(out ? 'EXIT' : 'ENTRANCE', w/2 + 110, h/2 + 4);
+    }))})));
+    sign.position.set(0, DOOR.h + .42, .03); dg.add(sign);
+  });
 
   const nxL = Math.max(1, Math.round(W/12)), nzL = Math.max(1, Math.round(D/12));
   roomLights = [];
@@ -1408,7 +1508,22 @@ function renderPlan(){
   sv('rect', {x:0, y:0, width:Wp, height:Dp, fill:floorOf(ex).hex, 'fill-opacity':.16}, plan);
   sv('rect', {x:0, y:0, width:Wp, height:Dp, class:'wall'}, plan);
   const ft = (t, x, y, anchor, rot) => { const n = sv('text', {x, y, class:'face-t', 'text-anchor':anchor || 'middle'}, plan); if(rot) n.setAttribute('transform', `rotate(${rot} ${x} ${y})`); n.textContent = t; };
-  ft('북쪽 벽', Wp/2, -8); ft('남쪽 벽 · 입구', Wp/2, Dp + 16);
+  ft('북쪽 벽', Wp/2, -8); ft('남쪽 벽', Wp/2, Dp + 16);
+  [layout.doors.ent, layout.doors.ext].forEach(dr => {
+    if(!dr) return;
+    const f = dr.face, horiz = !f.nx, L = DOOR.w*PS, out = dr.kind === 'out';
+    const dg = sv('g', {class:'door-g', 'data-door':dr.kind}, plan);
+    const cx = gx(dr.x), cy = gy(dr.z);
+    sv('rect', horiz ? {x:cx - L/2 - 4, y:cy - 14, width:L + 8, height:28, class:'hit'} : {x:cx - 14, y:cy - L/2 - 4, width:28, height:L + 8, class:'hit'}, dg);
+    sv('rect', horiz ? {x:cx - L/2, y:cy - 3, width:L, height:6, class:'door-gap'} : {x:cx - 3, y:cy - L/2, width:6, height:L, class:'door-gap'}, dg);
+    // arrow: into the room for the entrance, out through the door for the exit
+    const ix = cx + f.nx*PS*.9, iy = cy + f.nz*PS*.9;
+    const [tx, ty] = out ? [cx, cy] : [ix, iy], dx = out ? -f.nx : f.nx, dy = out ? -f.nz : f.nz, px = -dy, py = dx;
+    const bar = horiz ? `M${cx - L/2} ${cy}H${cx + L/2}` : `M${cx} ${cy - L/2}V${cy + L/2}`;
+    sv('path', {class:'door-mark' + (out ? ' out' : ''),
+      d:`${bar}M${cx} ${cy}L${ix} ${iy}M${tx - dx*4 + px*4} ${ty - dy*4 + py*4}L${tx} ${ty}L${tx - dx*4 - px*4} ${ty - dy*4 - py*4}`}, dg);
+    const t = sv('text', {x:cx + f.nx*PS*1.8, y:cy + f.nz*PS*1.8, class:'door-t' + (out ? ' out' : '')}, dg); t.textContent = out ? '출구' : '입구';
+  });
   ft('서쪽 벽', -12, Dp/2, 'middle', -90); ft('동쪽 벽', Wp + 12, Dp/2, 'middle', 90);
   // intro panel
   const k = layout.kiosk, KL = KIOSK.w*PS;
@@ -1416,7 +1531,8 @@ function renderPlan(){
     transform:`translate(${gx(k.cx)} ${gy(k.cz)}) rotate(${k.deg})`}, plan);
   sv('rect', {x:-KL/2-3, y:-10, width:KL+6, height:20, rx:3, class:'hit'}, kgp);
   sv('rect', {x:-KL/2, y:-2, width:KL, height:4, class:'kiosk'}, kgp);
-  const kt = sv('text', {x:0, y:13, class:'face-t', 'text-anchor':'middle'}, kgp); kt.textContent = planEdit ? '소개판 앞면 ▾' : '소개판';
+  const kt = sv('text', {x:0, y:-6, class:'face-t', 'text-anchor':'middle'}, kgp); kt.textContent = '소개판';
+  if(planEdit) sv('path', {d:'M-4 4L4 4L0 9Z', class:'kiosk'}, kgp);   // small mark on the front face
   // free walls; A face = local +y in this rotated frame
   layout.pws.forEach(pw => {
     const L = pw.len*PS;
@@ -1429,6 +1545,14 @@ function renderPlan(){
       const a = sv('text', {x:0, y:7, class:'pw-side'}, gw); a.textContent = 'A';
       const b = sv('text', {x:0, y:-7, class:'pw-side'}, gw); b.textContent = 'B';
     }
+  });
+  // floor arrows
+  layout.arrows.forEach(a => {
+    const sc = clamp(a.size/.45, .7, 1.2);   // keep small stickers visible on the plan
+    const ag = sv('g', {class:'pwall arrow-g' + (selWallId === 'arrow:' + a.id ? ' sel' : ''), 'data-arrow':a.id,
+      transform:`translate(${gx(a.x)} ${gy(a.z)}) rotate(${a.rot}) scale(${sc})`}, plan);
+    sv('circle', {r:9, class:'hit'}, ag);
+    sv('path', {class:'shape', fill:a.color, d:'M0 -6.5L5.5 0H2V6H-2V0H-5.5Z'}, ag);
   });
   // slots
   layout.slots.forEach(s => {
@@ -1488,7 +1612,19 @@ plan.addEventListener('pointerdown', e => {
     return;
   }
   if(!planEdit || readOnly || !layout) return;
+  const dd = e.target.closest('.door-g');
+  if(dd){
+    e.preventDefault(); drag = {id:'door', kind:dd.dataset.door, moved:false};
+    plan.setPointerCapture(e.pointerId); return;
+  }
   const g = e.target.closest('.pwall'); if(!g) return;
+  if(g.dataset.arrow){
+    const a = layout.arrows.find(x => x.id === g.dataset.arrow); if(!a) return;
+    e.preventDefault(); selWallId = 'arrow:' + a.id;
+    const p = planPt(e);
+    drag = {id:'arrow', aid:a.id, ox:p.x - a.x, oz:p.z - a.z, moved:false};
+    plan.setPointerCapture(e.pointerId); renderPlan(); syncWallCtl(); return;
+  }
   if(g.dataset.kiosk){
     e.preventDefault(); selWallId = 'kiosk';
     const p = planPt(e), k = layout.kiosk;
@@ -1510,6 +1646,24 @@ plan.addEventListener('pointermove', e => {
   }
   if(!drag) return;
   const snap = v => Math.round(v*4)/4;
+  if(drag.id === 'door'){
+    const ex = curEx(); if(!ex) return;
+    const p = planPt(e);
+    let best = null;
+    layout.faces.filter(f => !f.wall).forEach(f => {
+      const along = clamp((p.x - f.cx)*f.ux + (p.z - f.cz)*f.uz, -f.len/2, f.len/2);
+      const dist = Math.hypot(p.x - (f.cx + f.ux*along), p.z - (f.cz + f.uz*along));
+      if(!best || dist < best.dist) best = {f, along, dist};
+    });
+    ex.doors = {...doorState(), [drag.kind]: {wall:best.f.key, at:snap(best.along)}};
+    drag.moved = true; layout = computeLayout(); renderPlan(); syncDoorCtl(); return;
+  }
+  if(drag.id === 'arrow'){
+    const ex = curEx(); if(!ex) return;
+    const p = planPt(e);
+    ex.arrows = layout.arrows.map(a => a.id === drag.aid ? {...a, x:snap(p.x - drag.ox), z:snap(p.z - drag.oz)} : a);
+    drag.moved = true; layout = computeLayout(); renderPlan(); syncWallCtl(); return;
+  }
   if(drag.id === 'kiosk'){
     const ex = curEx(); if(!ex) return;
     const p = planPt(e), k = layout.kiosk;
@@ -1526,7 +1680,7 @@ plan.addEventListener('pointermove', e => {
 async function endDrag(){
   if(!drag) return;
   const d = drag; drag = null;
-  if(d.moved){ suppressClick = true; if(d.id === 'kiosk') saveKiosk(); else await saveWall(d.id); }
+  if(d.moved){ suppressClick = true; if(d.id === 'kiosk') saveKiosk(); else if(d.id === 'door') saveDoors(); else if(d.id === 'arrow') saveArrows(); else await saveWall(d.id); }
   if(pendingWalls){ walls = pendingWalls; pendingWalls = null; }
   refresh();
 }
@@ -1634,24 +1788,124 @@ function saveKiosk(){
   const k = layout.kiosk;
   setDeco({kiosk:{x:k.cx, z:k.cz, rot:k.deg}}, true);
 }
+/* entrance / exit */
+function doorState(){
+  const d = layout.doors, pack = x => x ? {wall:x.face.key, at:Math.round(x.at*100)/100} : null;
+  return {in:pack(d.ent), out:pack(d.ext)};
+}
+function saveDoors(){ setDeco({doors:doorState()}, true); refresh(); }
+function syncDoorCtl(){
+  if(!layout) return;
+  const d = layout.doors, opts = (sel, withNone) => {
+    if(!sel.options.length){
+      if(withNone){ const o = document.createElement('option'); o.value = ''; o.textContent = '없음 (입구로 나감)'; sel.append(o); }
+      Object.entries(WALL_NAMES).forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v; sel.append(o); });
+    }
+  };
+  opts($('dr-inWall'), false); opts($('dr-outWall'), true);
+  const fromLeft = x => Math.round((x.at + x.face.len/2)*10)/10;
+  $('dr-inWall').value = d.ent.face.key;
+  if(document.activeElement !== $('dr-inAt')){ $('dr-inAt').value = fromLeft(d.ent); }
+  $('dr-inAt').max = d.ent.face.len;
+  $('dr-outWall').value = d.ext ? d.ext.face.key : '';
+  $('dr-outAtWrap').hidden = !d.ext;
+  if(d.ext){ if(document.activeElement !== $('dr-outAt')) $('dr-outAt').value = fromLeft(d.ext); $('dr-outAt').max = d.ext.face.len; }
+}
+function doorInput(kind, wall, fromLeft){
+  const ex = curEx(); if(!ex || !layout) return;
+  const st = doorState();
+  if(kind === 'out' && !wall) st.out = null;
+  else {
+    const f = layout.faceByKey[wall];
+    const prev = kind === 'in' ? layout.doors.ent : layout.doors.ext;
+    const left = fromLeft != null && Number.isFinite(fromLeft) ? fromLeft : (prev && prev.face === f ? prev.at + f.len/2 : f.len/2);
+    st[kind] = {wall, at:left - f.len/2};
+  }
+  ex.doors = st; layout = computeLayout(); saveDoors();
+}
+$('dr-inWall').addEventListener('change', e => doorInput('in', e.target.value, null));
+$('dr-inAt').addEventListener('change', e => doorInput('in', $('dr-inWall').value, +e.target.value));
+$('dr-outWall').addEventListener('change', e => doorInput('out', e.target.value, null));
+$('dr-outAt').addEventListener('change', e => doorInput('out', $('dr-outWall').value, +e.target.value));
+
+/* floor arrows */
+const selArrow = () => layout && typeof selWallId === 'string' && selWallId.startsWith('arrow:') ? layout.arrows.find(a => 'arrow:' + a.id === selWallId) || null : null;
+function saveArrows(){ setDeco({arrows: curEx().arrows || []}, true); }
+function arrowEdit(fields, done){
+  const ex = curEx(), a = selArrow(); if(!ex || !a) return;
+  ex.arrows = layout.arrows.map(x => x.id === a.id ? {...x, ...fields} : x);
+  layout = computeLayout(); renderPlan(); syncWallCtl(); scheduleRebuild();
+  if(done) saveArrows();
+}
+function addArrow(base){
+  const ex = curEx(); if(!ex || !layout) return;
+  if(layout.arrows.length >= MAX_ARROWS){ showStatus(`바닥 화살표는 ${MAX_ARROWS}개까지 붙일 수 있습니다.`); return; }
+  let a;
+  if(base){
+    const r = base.rot*Math.PI/180, step = base.size + 1.2;   // next one further along the way it points
+    a = {...base, x:base.x + Math.sin(r)*step, z:base.z - Math.cos(r)*step};
+  } else {
+    const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+    a = {x:pos.x + fx*2.5, z:pos.z + fz*2.5, rot:normDeg(Math.round(-yaw*180/Math.PI/45)*45), size:.4, color:'#1f4d3f'};
+  }
+  a.id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  a.x = Math.round(clamp(a.x, -layout.W/2 + .5, layout.W/2 - .5)*4)/4; a.z = Math.round(clamp(a.z, -layout.D/2 + .5, layout.D/2 - .5)*4)/4;
+  ex.arrows = [...layout.arrows, a]; selWallId = 'arrow:' + a.id;
+  layout = computeLayout(); renderPlan(); syncWallCtl(); saveArrows();
+}
+$('addArrowBtn').onclick = () => addArrow(null);
+$('ar-dup').onclick = () => { const a = selArrow(); if(a) addArrow(a); };
+$('ar-del').onclick = () => {
+  const ex = curEx(), a = selArrow(); if(!ex || !a) return;
+  ex.arrows = layout.arrows.filter(x => x.id !== a.id); selWallId = null;
+  layout = computeLayout(); renderPlan(); syncWallCtl(); saveArrows();
+};
+$('ar-rot').addEventListener('input', e => arrowEdit({rot:+e.target.value}));
+$('ar-rot').addEventListener('change', e => arrowEdit({rot:+e.target.value}, true));
+$('ar-rotN').addEventListener('change', e => { if(e.target.value !== '') arrowEdit({rot:normDeg(+e.target.value)}, true); });
+document.querySelectorAll('[data-arot]').forEach(b => b.onclick = () => arrowEdit({rot:+b.dataset.arot}, true));
+$('ar-xN').addEventListener('change', e => { if(e.target.value !== '' && layout) arrowEdit({x:clamp(+e.target.value, .4, layout.W - .4) - layout.W/2}, true); });
+$('ar-zN').addEventListener('change', e => { if(e.target.value !== '' && layout) arrowEdit({z:clamp(+e.target.value, .4, layout.D - .4) - layout.D/2}, true); });
+$('ar-size').addEventListener('change', e => arrowEdit({size:+e.target.value}, true));
+$('ar-color').addEventListener('input', e => arrowEdit({color:e.target.value}));
+$('ar-color').addEventListener('change', e => arrowEdit({color:e.target.value}, true));
+
 function syncWallCtl(){
+  syncDoorCtl();
+  const ar = selArrow();
+  $('arrowCtl').hidden = !ar;
+  if(ar){
+    $('wallCtl').hidden = true; $('kioskCtl').hidden = true;
+    const setN = (id, v) => { if(document.activeElement !== $(id)) $(id).value = v; };
+    const dirName = ['북', '북동', '동', '남동', '남', '남서', '서', '북서'][Math.round(ar.rot/45) % 8];
+    $('wallSelInfo').textContent = `바닥 화살표 · ${dirName}쪽을 가리킴 · 끌어서 옮기거나 숫자로 맞추세요.`;
+    setN('ar-rot', ar.rot); setN('ar-rotN', ar.rot);
+    setN('ar-xN', Math.round((ar.x + layout.W/2)*100)/100); setN('ar-zN', Math.round((ar.z + layout.D/2)*100)/100);
+    $('ar-size').value = String(ar.size); if(document.activeElement !== $('ar-color')) $('ar-color').value = ar.color;
+    return;
+  }
+  if(typeof selWallId === 'string' && selWallId.startsWith('arrow:')) selWallId = null;
   const isK = selWallId === 'kiosk' && layout;
   $('kioskCtl').hidden = !isK;
   if(isK){
     $('wallCtl').hidden = true;
     $('wallSelInfo').textContent = '소개판 · 끌어서 옮기고, 방향을 돌려 앞면(전시명)이 관람객 쪽을 보게 하세요.';
-    if(document.activeElement !== $('ki-rot')) $('ki-rot').value = layout.kiosk.deg;
-    $('ki-rotOut').textContent = layout.kiosk.deg + '°';
+    const k = layout.kiosk, setN = (id, v) => { if(document.activeElement !== $(id)) $(id).value = v; };
+    setN('ki-rot', k.deg); setN('ki-rotN', k.deg);
+    setN('ki-xN', Math.round((k.cx + layout.W/2)*100)/100); setN('ki-zN', Math.round((k.cz + layout.D/2)*100)/100);
     return;
   }
   const pw = selWallId && layout && layout.wallsById[selWallId];
   if(selWallId && !pw) selWallId = null;
   $('wallCtl').hidden = !pw;
-  if(!pw){ $('wallSelInfo').textContent = '+ 벽 세우기를 누르면 3D 화면에서 지금 바라보는 곳에 벽이 생깁니다. 벽이나 소개판을 누르면 고르고, 끌어서 옮길 수 있어요.'; return; }
+  if(!pw){ $('wallSelInfo').textContent = '+ 벽 세우기 · + 바닥 화살표를 누르면 3D 화면에서 지금 바라보는 곳에 생깁니다. 벽·소개판·화살표를 누르면 고르고, 끌어서 옮길 수 있어요.'; return; }
   const n = layout.slots.filter(s => s.face.wall === pw && s.work).length;
   $('wallSelInfo').textContent = `${pw.label} · 작품 ${n}점`;
-  $('w-len').value = pw.len; $('w-lenOut').textContent = pw.len.toFixed(1) + ' m';
-  $('w-rot').value = pw.deg; $('w-rotOut').textContent = pw.deg + '°';
+  const setN = (id, v) => { if(document.activeElement !== $(id)) $(id).value = v; };
+  setN('w-len', pw.len); setN('w-lenN', Math.round(pw.len*100)/100);
+  setN('w-rot', pw.deg); setN('w-rotN', pw.deg);
+  setN('w-xN', Math.round((pw.cx + layout.W/2)*100)/100); setN('w-zN', Math.round((pw.cz + layout.D/2)*100)/100);
+  $('w-xN').max = layout.W; $('w-zN').max = layout.D;
   if(document.activeElement !== $('w-color')) $('w-color').value = pw.color || colorOf(curEx()?.wallColor).hex;
   $('w-colorReset').hidden = !pw.color;
   resetDel();
@@ -1693,6 +1947,20 @@ function kioskRot(deg, done){
   if(done) saveKiosk();
 }
 $('ki-rot').addEventListener('input', e => kioskRot(+e.target.value));
+$('ki-rotN').addEventListener('change', e => { if(e.target.value !== '') kioskRot(+e.target.value, true); });
+function kioskPos(field, v){
+  const ex = curEx(); if(!ex || !layout || !Number.isFinite(v)) return;
+  const k = layout.kiosk;
+  ex.kiosk = {x:k.cx, z:k.cz, rot:k.deg, [field]: field === 'x' ? v - layout.W/2 : v - layout.D/2};
+  layout = computeLayout(); renderPlan(); syncWallCtl(); saveKiosk();
+}
+$('ki-xN').addEventListener('change', e => { if(e.target.value !== '') kioskPos('x', +e.target.value); });
+$('ki-zN').addEventListener('change', e => { if(e.target.value !== '') kioskPos('z', +e.target.value); });
+$('w-lenN').addEventListener('change', e => { if(e.target.value !== '') wallInput('len', clamp(+e.target.value, 1.5, 10), true); });
+$('w-rotN').addEventListener('change', e => { if(e.target.value !== '') wallInput('rot', normDeg(+e.target.value), true); });
+document.querySelectorAll('[data-wrot]').forEach(b => b.onclick = () => wallInput('rot', +b.dataset.wrot, true));
+$('w-xN').addEventListener('change', e => { if(e.target.value !== '' && layout) wallInput('x', clamp(+e.target.value, .6, layout.W - .6) - layout.W/2, true); });
+$('w-zN').addEventListener('change', e => { if(e.target.value !== '' && layout) wallInput('z', clamp(+e.target.value, .6, layout.D - .6) - layout.D/2, true); });
 $('ki-rot').addEventListener('change', e => kioskRot(+e.target.value, true));
 $('ki-reset').onclick = () => { setDeco({kiosk:null}, true); layout = computeLayout(); renderPlan(); syncWallCtl(); };
 $('w-color').addEventListener('input', e => wallInput('color', e.target.value));
@@ -1940,7 +2208,7 @@ function openEx(id){
       }, () => {}));
     }
     layout = curEx() ? computeLayout() : null;
-    if(layout){ pos.x = layout.spawn.x; pos.z = layout.spawn.z; yaw = 0; pitch = 0; tween = null; }
+    if(layout){ pos.x = layout.spawn.x; pos.z = layout.spawn.z; yaw = layout.spawn.yaw; pitch = 0; tween = null; }
   }
   updateEditUI();
   renderExHead(); refresh();
@@ -1953,7 +2221,7 @@ function refresh(){
   if(!curId || !ex){ renderExHead(); return; }
   const firstLayout = !layout;
   layout = computeLayout();
-  if(firstLayout){ pos.x = layout.spawn.x; pos.z = layout.spawn.z; yaw = 0; }
+  if(firstLayout){ pos.x = layout.spawn.x; pos.z = layout.spawn.z; yaw = layout.spawn.yaw; }
   if(Math.abs(pos.x) > layout.W/2 || Math.abs(pos.z) > layout.D/2){ pos.x = layout.spawn.x; pos.z = layout.spawn.z; }
   if(selectedId && !layout.byId[selectedId]) selectedId = null;
   buildGallery(); renderPlan(); renderCatalog(); renderInfo(); syncWallCtl(); syncWorkCtl(); renderIntro(); renderDeco();
@@ -1999,7 +2267,7 @@ $('exForm').addEventListener('submit', async e => {
     size:(document.querySelector('input[name=x-size]:checked') || {}).value || 'm',
     wallColor: prev?.wallColor || '#e9e7e2',
     floorStyle: prev?.floorStyle || 'wood', floorColor: prev?.floorColor || '#8a6446',
-    spotlights: prev ? prev.spotlights !== false : true, ambient: prev?.ambient ?? .6, lightTone: prev?.lightTone || 'warm', lightStyle: prev?.lightStyle || 'lamp', kiosk: prev?.kiosk || null,
+    spotlights: prev ? prev.spotlights !== false : true, ambient: prev?.ambient ?? .6, lightTone: prev?.lightTone || 'warm', lightStyle: prev?.lightStyle || 'lamp', kiosk: prev?.kiosk || null, doors: prev?.doors || null, arrows: prev?.arrows || null,
     owner: prev ? (prev.owner || null) : myId, createdAt: prev ? (prev.createdAt || now) : now, updatedAt: now,
   };
   const btn = $('exSave'); btn.disabled = true;
