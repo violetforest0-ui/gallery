@@ -1,0 +1,2144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>서양미술사 가상전시</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: museum guidebook — lobby of group exhibitions; each exhibition has wall text, a walk-through hall with its floor plan, and a catalogue */
+:root{
+  --bg:#f1f2f0; --surface:#ffffff; --ink:#1c2220; --muted:#5d6763; --line:#d3d8d5;
+  --accent:#1f4d3f; --on-accent:#ffffff; --gilt:#94702a; --danger:#a3342b;
+  --stage:#0f1111; --stage-ink:#eef0ee; --scrim:rgba(14,17,16,.62); --grid:rgba(28,34,32,.07);
+  --display:"Nanum Myeongjo","Batang",serif;
+  --body:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111514; --surface:#181e1c; --ink:#e6ebe8; --muted:#9aa6a1; --line:#2b3431;
+  --accent:#86c9ad; --on-accent:#0c1512; --gilt:#d6b46c; --danger:#e58075;
+  --stage:#080909; --stage-ink:#eef0ee; --scrim:rgba(0,0,0,.66); --grid:rgba(230,235,232,.06); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111514; --surface:#181e1c; --ink:#e6ebe8; --muted:#9aa6a1; --line:#2b3431;
+  --accent:#86c9ad; --on-accent:#0c1512; --gilt:#d6b46c; --danger:#e58075;
+  --stage:#080909; --stage-ink:#eef0ee; --scrim:rgba(0,0,0,.66); --grid:rgba(230,235,232,.06); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+[hidden]:not([hidden=until-found i]){display:none!important}
+img{max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:20px;padding-block:24px 64px;display:flex;flex-direction:column;gap:24px}
+main{display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--display);font-weight:800;text-wrap:balance;margin:0;line-height:1.25}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gilt);margin:0}
+button{font:inherit;cursor:pointer}
+a{color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible,.viewport:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:6px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.danger{color:var(--danger)}
+.btn.danger.solid{background:var(--danger);border-color:var(--danger);color:var(--on-accent)}
+.meta{color:var(--muted);font-size:13.5px}
+.status{border:1px solid var(--line);border-left:3px solid var(--gilt);background:var(--surface);padding:10px 14px;border-radius:4px;color:var(--muted);font-size:14px}
+.sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 16px;margin-bottom:12px}
+.sec-head h2{font-size:24px}
+.sec-head p{margin:0;color:var(--muted);font-size:13.5px}
+
+/* lobby */
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid var(--line);padding-bottom:20px}
+.brand{display:flex;flex-direction:column;gap:6px;min-width:0}
+.brand h1{font-size:clamp(28px,4.6vw,44px)}
+.brand .sub{margin:0;color:var(--muted);max-width:60ch}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.title-edit{display:flex;flex-direction:column;gap:8px;width:100%;max-width:520px}
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.ex-card{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;padding:0;color:var(--ink);min-width:0}
+.ex-card:hover{border-color:var(--accent)}
+.ex-card .band{padding:18px 16px 16px;min-height:132px;display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+.ex-card .band .g{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;opacity:.8}
+.ex-card .band h3{font-size:21px;overflow-wrap:anywhere}
+.ex-card .body{padding:12px 16px 14px;display:flex;flex-direction:column;gap:4px}
+.ex-card .theme{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ex-card .facts{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.ex-new{border:1.5px dashed var(--line);background:none;border-radius:6px;color:var(--muted);min-height:200px;display:grid;place-items:center;text-align:center;padding:16px}
+.ex-new:hover{color:var(--accent);border-color:var(--accent)}
+.ex-new b{display:block;font-family:var(--display);font-size:20px;color:var(--ink)}
+
+/* exhibition head + tabs */
+.crumb a{font-size:14px;text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.ex-head{display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--line);padding-bottom:16px}
+.ex-head h1{font-size:clamp(28px,5vw,48px)}
+.ex-head .theme{margin:0;font-family:var(--display);font-size:clamp(16px,2.2vw,20px);color:var(--muted);max-width:60ch}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;margin-top:-8px}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;color:var(--muted);font-weight:500;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* intro */
+.intro{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start}
+@media (max-width:820px){.intro{grid-template-columns:1fr}}
+.intro article{display:flex;flex-direction:column;gap:14px}
+.intro article h2{font-size:26px}
+.intro .intent{white-space:pre-wrap;font-size:16px;line-height:1.85;max-width:65ch;margin:0}
+.intro .empty{color:var(--muted);margin:0}
+.facts-box{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.facts-box dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:14px}
+.facts-box dt{color:var(--muted)}
+.facts-box dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.facts-box .row{display:flex;gap:8px;flex-wrap:wrap}
+.sw-dot{display:inline-block;width:12px;height:12px;border-radius:2px;border:1px solid var(--line);vertical-align:-1px;margin-right:6px}
+
+/* 3D stage */
+.viewport{position:relative;width:100%;aspect-ratio:16/9;max-height:72vh;min-height:340px;background:var(--stage);border-radius:6px;overflow:hidden;color:var(--stage-ink)}
+.viewport canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.viewport canvas:active{cursor:grabbing}
+.hud{position:absolute;left:12px;top:12px;display:flex;gap:8px;align-items:center;pointer-events:none;max-width:calc(100% - 24px)}
+.chip{background:var(--scrim);backdrop-filter:blur(6px);padding:5px 10px;border-radius:4px;font-size:13px;color:var(--stage-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hint{position:absolute;left:12px;bottom:12px;max-width:calc(100% - 190px);font-size:12.5px;line-height:1.45;pointer-events:none;white-space:normal}
+.pad{position:absolute;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:4px}
+.pad button{background:var(--scrim);color:var(--stage-ink);border:1px solid rgba(255,255,255,.18);border-radius:6px;font-size:18px;touch-action:none;user-select:none;-webkit-user-select:none}
+.pad button:active{background:rgba(255,255,255,.22)}
+.pad .up{grid-column:2;grid-row:1}.pad .left{grid-column:1;grid-row:2}.pad .down{grid-column:2;grid-row:2}.pad .right{grid-column:3;grid-row:2}
+.info{position:absolute;top:12px;right:12px;width:min(340px,calc(100% - 24px));max-height:calc(100% - 128px);overflow:auto;background:var(--surface);color:var(--ink);border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.info .no{font-family:var(--mono);font-size:12px;color:var(--gilt);letter-spacing:.06em}
+.info h3{font-size:20px}
+.info .meta{margin:0}
+.info .note{margin:0;white-space:pre-wrap;font-size:14px}
+.info .curator{margin:0;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+.info .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.info .x{position:absolute;top:8px;right:8px;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;padding:4px 8px}
+.nogl{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center}
+
+/* floor plan */
+.plan-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px}
+#plan{display:block;min-width:560px;width:100%;max-width:980px;margin:0 auto;height:auto;cursor:crosshair}
+#plan.editing{cursor:default;touch-action:none}
+#plan.moving{cursor:default;touch-action:none}
+#plan.moving .dot{cursor:move}
+#plan .dot.pin circle{stroke:var(--gilt);stroke-width:2}
+#plan .grid{stroke:var(--grid);stroke-width:1}
+#plan .wall{stroke:var(--ink);stroke-width:4;fill:none}
+#plan .face-t{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+#plan .kiosk{fill:var(--muted)}
+#plan .dim{stroke:var(--muted);stroke-width:1;fill:none}
+#plan .dim-t{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+#plan .dot{cursor:pointer}
+#plan .dot circle{fill:var(--accent);stroke:var(--surface);stroke-width:1.5}
+#plan .dot text{font-family:var(--mono);font-size:8px;fill:var(--on-accent);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+#plan .dot:hover circle,#plan .dot.sel circle{fill:var(--gilt)}
+#plan .empty-slot{fill:none;stroke:var(--muted);stroke-dasharray:2 2;stroke-width:1}
+#plan .pwall .hit{fill:transparent}
+#plan .pwall .body{fill:var(--ink)}
+#plan.editing .pwall{cursor:move}
+#plan.editing .pwall:hover .body{fill:var(--gilt)}
+#plan .pwall.sel .body{fill:var(--accent)}
+#plan .pwall.sel .hit{fill:var(--accent);fill-opacity:.14}
+#plan .pw-label{font-family:var(--mono);font-size:8px;fill:var(--muted)}
+#plan .pw-side{font-family:var(--mono);font-size:8px;font-weight:500;fill:var(--accent);text-anchor:middle;dominant-baseline:central}
+#plan .me{pointer-events:none}
+#plan .me path{fill:var(--danger);fill-opacity:.22}
+#plan .me circle{fill:var(--danger);stroke:var(--surface);stroke-width:1.5}
+.plan-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.wallbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:10px 14px;margin-bottom:10px}
+.wallbar .msg{color:var(--muted);font-size:13.5px;flex:1 1 220px;min-width:0}
+.wallctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.wallctl .rng{display:flex;align-items:center;gap:8px;font-size:13px}
+.wallctl input[type=range]{width:130px;padding:0;background:none;border:0}
+.wallctl output{font-family:var(--mono);font-size:12px;min-width:44px;font-variant-numeric:tabular-nums}
+
+.deco{flex-direction:column;align-items:stretch;gap:12px}
+.deco-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.deco-row .lbl{font-size:13px;font-weight:600;width:72px;flex:none}
+.swatches{display:flex;flex-wrap:wrap;gap:6px}
+.swatch-btn{width:28px;height:28px;border-radius:5px;border:1px solid var(--line);padding:0}
+.swatch-btn[aria-pressed="true"]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
+.picker{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer}
+.picker input[type=color]{width:36px;height:30px;padding:2px;border-radius:5px;cursor:pointer}
+.style-btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 10px 4px 4px;display:inline-flex;align-items:center;gap:8px;font-size:13px}
+.style-btn canvas{width:30px;height:30px;border-radius:4px;display:block}
+.style-btn[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.style-btn.txt{padding:6px 12px}
+.style-btn .tone{width:14px;height:14px;border-radius:50%;border:1px solid var(--line)}
+.deco .rng{display:flex;align-items:center;gap:8px;font-size:13px}
+.deco input[type=range]{width:140px;padding:0;background:none;border:0}
+.deco output{font-family:var(--mono);font-size:12px;min-width:38px;font-variant-numeric:tabular-nums}
+
+/* catalogue */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.card{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;color:var(--ink);min-width:0}
+.card:hover{border-color:var(--accent)}
+.card .thumb{aspect-ratio:4/3;width:100%;max-width:100%;background:var(--bg);display:grid;place-items:center;overflow:hidden;border-radius:3px}
+.card .thumb img{width:100%;height:100%;object-fit:contain}
+.card .no{font-family:var(--mono);font-size:11px;color:var(--gilt)}
+.card .t{font-family:var(--display);font-weight:700;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.card .a{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.add-here{border:1px dashed var(--line);background:none;color:var(--muted);border-radius:6px;padding:10px;min-height:140px}
+.add-here:hover{color:var(--accent);border-color:var(--accent)}
+
+/* modals */
+.modal{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;padding:16px;z-index:10;overflow:auto}
+.sheet{background:var(--surface);color:var(--ink);border-radius:8px;width:min(660px,100%);padding:22px;display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 32px);overflow:auto}
+.sheet h2{font-size:24px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.span2{grid-column:1/-1}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}.hint{display:none}}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0;border:0;padding:0;margin:0}
+.field label,.field legend{font-size:13px;font-weight:600;padding:0}
+.field small{color:var(--muted);font-size:12px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:8px 10px;width:100%}
+textarea{min-height:110px;resize:vertical}
+#x-intent{min-height:180px}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choice{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:6px;padding:7px 10px;cursor:pointer;font-size:13.5px}
+.choice input{width:auto;margin:0;accent-color:var(--accent)}
+.choice .sw{width:18px;height:18px;border-radius:3px;border:1px solid var(--line)}
+.choice:has(input:checked){border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.drop{border:1.5px dashed var(--line);border-radius:6px;padding:14px;display:flex;gap:14px;align-items:center;cursor:pointer}
+.drop.over{border-color:var(--accent)}
+.drop img{width:96px;height:96px;object-fit:contain;background:var(--bg);border-radius:4px;flex:none}
+.drop .ph{width:96px;height:96px;flex:none;background:var(--bg);border-radius:4px;display:grid;place-items:center;color:var(--muted);font-size:28px}
+.err{color:var(--danger);margin:0;font-size:14px}
+.foot{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.savebar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 16px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 14px}
+.save-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 280px}
+.save-state{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.save-state::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.save-state[data-state="saving"]::before{background:var(--gilt)}
+.save-state[data-state="error"]{color:var(--danger)}
+.save-state[data-state="error"]::before{background:var(--danger)}
+.save-note{font-size:12.5px;color:var(--muted)}
+.gate{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:10px 14px}
+.gate label{font-size:13.5px;font-weight:600}
+.gate input{width:auto;flex:0 1 200px;min-width:120px}
+.gate .err{flex-basis:100%}
+.gate-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:6px}
+.gate-row .meta{margin:0}
+.gate-row input{width:auto;flex:0 1 200px;min-width:120px}
+.badge{font-size:12.5px;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:2px 10px}
+.import-confirm{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--line);padding-top:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+
+</head>
+<body>
+<div class="wrap">
+  <div class="status" id="statusBar" hidden></div>
+  <div class="savebar" id="saveBar" hidden>
+    <div class="save-info">
+      <span class="save-state" id="saveState" data-state="saved">불러오는 중…</span>
+      <span class="save-note">바꾼 내용은 이 기기에 자동으로 저장됩니다. 다른 기기에서 이어 하거나 제출할 때는 저장 파일을 쓰세요.</span>
+    </div>
+    <div class="actions">
+      <button class="btn" id="saveNowBtn" type="button">지금 저장</button>
+      <button class="btn" id="exportBtn" type="button">저장 파일 내려받기</button>
+      <button class="btn" id="importBtn" type="button">저장 파일 불러오기</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="sr" tabindex="-1" aria-hidden="true">
+    </div>
+    <div class="import-confirm" id="importConfirm" hidden></div>
+  </div>
+
+  <!-- ===== Lobby ===== -->
+  <main id="lobby">
+    <header class="top">
+      <div class="brand" id="brand">
+        <p class="eyebrow">Virtual Exhibitions · Western Art History</p>
+        <h1 id="hallTitle">서양미술사 가상전시관</h1>
+        <p class="sub" id="hallSub">서양미술사 속에서 주제를 정하고, 빈 전시장에 벽을 세워 직접 꾸민 전시입니다.</p>
+      </div>
+      <form class="title-edit" id="titleForm" hidden>
+        <div class="field"><label for="t-title">전시관 이름</label><input id="t-title" maxlength="60"></div>
+        <div class="field"><label for="t-sub">소개 문구</label><input id="t-sub" maxlength="140"></div>
+        <div class="foot"><button type="button" class="btn" id="t-cancel">취소</button><button class="btn primary" type="submit">저장</button></div>
+      </form>
+      <div class="actions">
+        <button class="btn" id="adminBtn" hidden>선생님 모드</button>
+        <button class="btn" id="editTitleBtn" hidden>이름 수정</button>
+        <button class="btn primary" id="newExBtn">새 전시 만들기</button>
+      </div>
+    </header>
+    <section aria-labelledby="exListH">
+      <div class="sec-head"><h2 id="exListH">전시 목록</h2><p id="exCount">전시를 불러오는 중입니다.</p></div>
+      <div class="ex-grid" id="exGrid"></div>
+    </section>
+    <form class="gate" id="adminForm" hidden>
+      <label for="adminCode">선생님 관리 코드</label>
+      <input id="adminCode" type="password" autocomplete="off" maxlength="60">
+      <button class="btn primary" type="submit">확인</button>
+      <button class="btn" type="button" id="adminCancel">취소</button>
+      <span class="err" id="adminErr" hidden></span>
+    </form>
+  </main>
+
+  <!-- ===== One exhibition ===== -->
+  <main id="exView" hidden>
+    <nav class="crumb"><a href="#" id="backLink">← 전시 목록</a></nav>
+    <header class="ex-head">
+      <p class="eyebrow" id="exGroup"></p>
+      <h1 id="exTitle">불러오는 중…</h1>
+      <p class="theme" id="exTheme"></p>
+      <div class="gate-row" id="editGate" hidden></div>
+    </header>
+    <div class="tabs" role="tablist" aria-label="전시 보기">
+      <button role="tab" data-tab="intro" aria-selected="true" id="tabbtn-intro" aria-controls="tab-intro">전시 소개</button>
+      <button role="tab" data-tab="hall" aria-selected="false" id="tabbtn-hall" aria-controls="tab-hall">전시장</button>
+      <button role="tab" data-tab="catalog" aria-selected="false" id="tabbtn-catalog" aria-controls="tab-catalog">도록</button>
+    </div>
+
+    <section id="tab-intro" role="tabpanel" aria-labelledby="tabbtn-intro">
+      <div class="intro">
+        <article>
+          <p class="eyebrow">주제 의도</p>
+          <p class="intent" id="introIntent"></p>
+          <div class="row actions" id="introActions"></div>
+        </article>
+        <aside class="facts-box">
+          <dl id="introFacts"></dl>
+          <div class="row" id="introDanger"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="tab-hall" role="tabpanel" aria-labelledby="tabbtn-hall" hidden>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div class="viewport" id="viewport" tabindex="0">
+          <canvas id="c" aria-label="3D 전시장. 드래그로 둘러보고 방향키로 이동"></canvas>
+          <div class="hud"><span class="chip" id="hudTitle"></span></div>
+          <div class="hint chip" id="hint">화면을 끌어서 둘러보고, 화면을 누른 뒤 W A S D 또는 방향키로 걸어요. 작품을 누르면 그 앞으로 갑니다.</div>
+          <div class="pad" aria-label="이동 버튼">
+            <button class="up" data-k="fwd" aria-label="앞으로">▲</button>
+            <button class="left" data-k="turnL" aria-label="왼쪽으로 돌기">◀</button>
+            <button class="down" data-k="back" aria-label="뒤로">▼</button>
+            <button class="right" data-k="turnR" aria-label="오른쪽으로 돌기">▶</button>
+          </div>
+          <aside class="info" id="info" hidden aria-live="polite"></aside>
+          <div class="nogl" id="nogl" hidden><p>이 브라우저에서는 3D 화면을 열 수 없습니다. 아래 도면과 도록으로 감상해 주세요.</p></div>
+        </div>
+        <div>
+          <div class="sec-head">
+            <div><h2>전시 도면</h2><p id="planHelp">점을 누르면 그 작품 앞으로, 빈 곳을 누르면 그 자리로 이동합니다. 눈금 한 칸은 2 m.</p></div>
+            <div class="plan-tools"><button class="btn" id="addWorkBtn2">작품 올리기</button><button class="btn" id="moveWorkBtn">작품 옮기기</button><button class="btn" id="decoBtn">색·조명 꾸미기</button><button class="btn" id="editPlanBtn">벽 세우기</button></div>
+          </div>
+          <div class="wallbar deco" id="decoBar" hidden>
+            <div class="deco-row"><span class="lbl">벽 색</span><div class="swatches" id="d-wallPresets"></div>
+              <label class="picker" for="d-wall"><input type="color" id="d-wall"> 직접 고르기</label></div>
+            <div class="deco-row"><span class="lbl">바닥 무늬</span><div class="swatches" id="d-floorStyles"></div></div>
+            <div class="deco-row"><span class="lbl">바닥 색</span><div class="swatches" id="d-floorPresets"></div>
+              <label class="picker" for="d-floor"><input type="color" id="d-floor"> 직접 고르기</label></div>
+            <div class="deco-row"><span class="lbl">조명 방식</span><div class="swatches" id="d-lstyle"></div></div>
+            <div class="deco-row"><span class="lbl">작품 조명</span><div class="swatches" id="d-spot"></div><div class="swatches" id="d-tone"></div></div>
+            <div class="deco-row"><span class="lbl">전시장 밝기</span>
+              <label class="rng" for="d-ambient"><span class="sr">전시장 전체 밝기</span>어둡게 <input type="range" id="d-ambient" min="0.15" max="1" step="0.05"> 밝게 <output id="d-ambientOut"></output></label></div>
+            <span class="msg" style="color:var(--muted);font-size:13px">바꾸면 3D 전시장에 바로 보이고, 모두에게 저장됩니다. 세운 벽 하나만 다른 색으로 하려면 ‘벽 세우기’에서 그 벽을 고르세요.</span>
+          </div>
+          <div class="wallbar" id="wallBar" hidden>
+            <button class="btn primary" id="addWallBtn">+ 벽 세우기</button>
+            <span class="msg" id="wallSelInfo"></span>
+            <div class="wallctl" id="wallCtl" hidden>
+              <label class="rng" for="w-len">길이 <input type="range" id="w-len" min="1.5" max="10" step="0.5"><output id="w-lenOut"></output></label>
+              <label class="rng" for="w-rot">방향 <input type="range" id="w-rot" min="0" max="345" step="15"><output id="w-rotOut"></output></label>
+              <label class="picker" for="w-color"><input type="color" id="w-color"> 이 벽 색</label>
+              <button type="button" class="btn" id="w-colorReset">전시장 벽 색과 같게</button>
+              <span id="w-delWrap"></span>
+            </div>
+          </div>
+          <div class="wallbar" id="workBar" hidden>
+            <span class="msg" id="workSelInfo"></span>
+            <div class="wallctl" id="workCtl" hidden>
+              <label class="rng" for="k-y">높이 <input type="range" id="k-y" min="0.5" max="3.6" step="0.05"><output id="k-yOut"></output></label>
+              <label class="rng" for="k-sz">크기 <input type="range" id="k-sz" min="0.3" max="2.4" step="0.05"><output id="k-szOut"></output></label>
+              <span class="swatches" id="k-lamp"></span>
+              <button type="button" class="btn" id="k-auto">자동 배치로 되돌리기</button>
+            </div>
+          </div>
+          <div class="plan-wrap"><svg id="plan" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="전시장 평면도"></svg></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-catalog" role="tabpanel" aria-labelledby="tabbtn-catalog" hidden>
+      <div class="sec-head"><h2>도록</h2><p id="countLine"></p></div>
+      <div class="cards" id="catalog"></div>
+    </section>
+  </main>
+</div>
+
+<!-- exhibition form -->
+<div class="modal" id="exModal" hidden>
+  <form class="sheet" id="exForm" novalidate>
+    <h2 id="exFormTitle">새 전시 만들기</h2>
+    <div class="grid2">
+      <div class="field span2"><label for="x-title">전시명 *</label><input id="x-title" maxlength="60" placeholder="예: 빛을 그린 사람들"></div>
+      <div class="field"><label for="x-group">이름 또는 모둠 *</label><input id="x-group" maxlength="30" placeholder="예: 김OO 또는 3모둠"></div>
+      <div class="field"><label for="x-members">참여 학생</label><input id="x-members" maxlength="120" placeholder="예: 김OO, 이OO, 박OO"></div>
+      <div class="field span2"><label for="x-theme">주제 *</label><input id="x-theme" maxlength="120" placeholder="예: 르네상스부터 인상주의까지, 화가들은 빛을 어떻게 다루었나"><small>한 문장으로 적어 주세요. 전시명 아래에 크게 걸립니다.</small></div>
+      <div class="field span2"><label for="x-intent">주제 의도</label><textarea id="x-intent" maxlength="2500" placeholder="왜 이 주제를 골랐는지, 관람객이 무엇을 느끼거나 알게 되길 바라는지, 작품을 어떤 순서와 구성으로 배치했는지 적어 주세요."></textarea></div>
+      <fieldset class="field span2"><legend>전시장 크기</legend><div class="choices" id="x-sizes"></div></fieldset>
+      <p class="meta span2" style="margin:0">벽과 바닥 색은 전시장 탭의 ‘색 꾸미기’에서 3D로 보면서 바꿀 수 있습니다.</p>
+    </div>
+    <div class="grid2" id="x-pinWrap" hidden>
+      <div class="field"><label for="x-pin">편집 비밀번호 *</label><input id="x-pin" type="password" maxlength="40" autocomplete="new-password"><small>이 전시를 고칠 때마다 씁니다. 4자 이상, 다른 곳에 쓰는 비밀번호는 쓰지 마세요.</small></div>
+      <div class="field"><label for="x-pin2">비밀번호 확인 *</label><input id="x-pin2" type="password" maxlength="40" autocomplete="new-password"></div>
+    </div>
+    <p class="err" id="exFormErr" hidden></p>
+    <div class="foot"><button type="button" class="btn" id="exCancel">취소</button><button type="submit" class="btn primary" id="exSave">만들기</button></div>
+  </form>
+</div>
+
+<!-- work form -->
+<div class="modal" id="modal" hidden>
+  <form class="sheet" id="form" novalidate>
+    <h2 id="formTitle">작품 올리기</h2>
+    <div class="field">
+      <label for="f-image">작품 이미지</label>
+      <div class="drop" id="drop">
+        <div class="ph" id="dropPh">🖼</div>
+        <img id="dropImg" alt="선택한 작품 미리보기" hidden>
+        <div><div>이미지를 끌어 놓거나 눌러서 고르세요.</div><small style="color:var(--muted)">JPG·PNG. 올릴 때 자동으로 크기를 줄입니다.</small></div>
+      </div>
+      <input type="file" id="f-image" accept="image/*" class="sr">
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="f-title">작품명 *</label><input id="f-title" maxlength="80" placeholder="예: 아테네 학당"></div>
+      <div class="field"><label for="f-artist">작가 *</label><input id="f-artist" maxlength="60" placeholder="예: 라파엘로 산치오"></div>
+      <div class="field"><label for="f-year">제작 연도</label><input id="f-year" maxlength="30" placeholder="예: 1509–1511"></div>
+      <div class="field"><label for="f-period">시대·사조</label><input id="f-period" maxlength="40" placeholder="예: 르네상스"></div>
+      <div class="field"><label for="f-spot">거는 벽</label><select id="f-spot"></select></div>
+      <div class="field"><label for="f-order">벽 안에서 순서</label><input id="f-order" type="number" min="1" max="99" placeholder="비우면 연도순"><small>왼쪽부터 1, 2, 3…</small></div>
+      <div class="field"><label for="f-medium">재료·기법</label><input id="f-medium" maxlength="60" placeholder="예: 프레스코"></div>
+      <div class="field"><label for="f-place">소장처</label><input id="f-place" maxlength="60" placeholder="예: 바티칸 사도 궁전"></div>
+    </div>
+    <div class="field"><label for="f-note">작품 해설</label><textarea id="f-note" maxlength="1200" placeholder="이 작품이 전시 주제와 어떻게 이어지는지, 눈여겨볼 점을 적어 주세요."></textarea></div>
+    <div class="field"><label for="f-curator">큐레이터 (학생 이름)</label><input id="f-curator" maxlength="40" placeholder="예: 김OO"></div>
+    <p class="err" id="formErr" hidden></p>
+    <div class="foot"><button type="button" class="btn" id="cancelBtn">취소</button><button type="submit" class="btn primary" id="saveBtn">전시하기</button></div>
+  </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+const SIZES = {
+  s: {W:20, D:14, name:'작게', note:'20 × 14 m'},
+  m: {W:28, D:18, name:'보통', note:'28 × 18 m'},
+  l: {W:36, D:24, name:'크게', note:'36 × 24 m'},
+};
+const COLORS = [
+  {id:'white', name:'흰 벽',     hex:'#e9e7e2'},
+  {id:'grey',  name:'회색',      hex:'#8f9291'},
+  {id:'red',   name:'짙은 빨강', hex:'#7b2f2b'},
+  {id:'green', name:'짙은 초록', hex:'#2f4b3b'},
+  {id:'blue',  name:'짙은 파랑', hex:'#2b3d5c'},
+  {id:'black', name:'먹색',      hex:'#2a2a2c'},
+  {id:'stone', name:'연회색',    hex:'#cfcdc7'},
+  {id:'sand',  name:'모래색',    hex:'#d9ccb4'},
+  {id:'wine',  name:'버건디',    hex:'#5a1f2b'},
+  {id:'olive', name:'올리브',    hex:'#66663a'},
+  {id:'sky',   name:'회청색',    hex:'#8fa6b8'},
+  {id:'plum',  name:'짙은 보라', hex:'#3e2f4f'},
+];
+const isHex = v => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
+const colorOf = id => COLORS.find(c => c.id === id || c.hex === String(id).toLowerCase())
+  || (isHex(id) ? {id, name:'직접 고른 색 ' + id.toLowerCase(), hex:id.toLowerCase()} : COLORS[0]);
+const FLOOR_STYLES = [
+  {id:'wood',     name:'마루'},
+  {id:'parquet',  name:'쪽마루'},
+  {id:'tile',     name:'타일'},
+  {id:'concrete', name:'콘크리트'},
+  {id:'marble',   name:'대리석'},
+  {id:'solid',    name:'단색'},
+];
+const FLOOR_COLORS = [
+  {name:'밝은 원목', hex:'#b98a5e'}, {name:'원목', hex:'#8a6446'}, {name:'짙은 원목', hex:'#4e3626'},
+  {name:'회색', hex:'#8d8f8c'}, {name:'흰 대리석', hex:'#e6e3dc'}, {name:'검정', hex:'#2b2b2c'},
+  {name:'테라코타', hex:'#a65a3f'}, {name:'짙은 초록', hex:'#2f4b3b'},
+];
+const TONES = [
+  {id:'warm',    name:'따뜻한 빛', hex:0xffd9a8, css:'#ffd9a8'},
+  {id:'natural', name:'자연광',    hex:0xfff3e2, css:'#fff3e2'},
+  {id:'cool',    name:'차가운 빛', hex:0xe2ebff, css:'#e2ebff'},
+];
+const MAX_SPOTS = 16;   // real spotlights; works beyond this get the fixture, beam and a painted-on glow
+const lightOf = ex => ({
+  spots: ex?.spotlights !== false,
+  ambient: ex?.ambient == null || !Number.isFinite(+ex.ambient) ? .6 : clamp(+ex.ambient, .15, 1),
+  tone: TONES.find(t => t.id === ex?.lightTone) || TONES[0],
+  style: ex?.lightStyle === 'ceiling' ? 'ceiling' : 'lamp',
+});
+const floorOf = ex => ({
+  style: FLOOR_STYLES.some(s => s.id === ex?.floorStyle) ? ex.floorStyle : 'wood',
+  hex: isHex(ex?.floorColor) ? ex.floorColor.toLowerCase() : '#8a6446',
+});
+const H = 4.2, EYE = 1.6, WALL_H = 3, MAX_WALLS = 20, PS = 12;
+const KIOSK = {w:2.8, h:2.4};
+const $ = id => document.getElementById(id);
+
+let exList = [], exReady = false;
+let curId = null, curSig = '', works = [], walls = [], layout = null, unsubs = [];
+const local = {works:{}, walls:{}};
+/* Standalone use: everything is kept on this device (IndexedDB, localStorage as fallback),
+   and a backup file lets a student carry the work to another device or keep a copy. */
+const STORE_KEY = 'western-art-virtual-gallery-v1', APP_ID = 'western-art-virtual-gallery';
+let lastSaved = '', persistTimer = 0, storeWarned = false, downloadsCap = null, pendingImport = null;
+let idbP = null, storeLoaded = false;
+const idb = () => idbP || (idbP = new Promise((res, rej) => {
+  try{
+    const r = indexedDB.open('virtual-gallery', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }catch(e){ rej(e); }
+}));
+async function idbGet(k){ const d = await idb(); return new Promise((res, rej) => { const q = d.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
+async function idbSet(k, v){ const d = await idb(); return new Promise((res, rej) => { const t = d.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(); t.onerror = t.onabort = () => rej(t.error); }); }
+const stateJSON = () => JSON.stringify({exList, works:local.works, walls:local.walls,
+  title:$('hallTitle').textContent, subtitle:$('hallSub').textContent});
+const hhmm = t => new Date(t).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+function setSaveState(st, at){
+  const n = $('saveState'); n.dataset.state = st;
+  n.textContent = st === 'saving' ? '저장하는 중…'
+    : st === 'error' ? '저장하지 못했습니다 · 저장 파일을 내려받아 두세요'
+    : `이 기기에 저장됨 · ${hhmm(at || Date.now())}`;
+}
+async function persistNow(force){
+  if(!localMode || !storeLoaded) return;
+  clearTimeout(persistTimer);
+  const data = stateJSON();
+  if(data === lastSaved && !force) return;
+  setSaveState('saving');
+  try{
+    try{ await idbSet('state', {at:Date.now(), json:data}); }
+    catch(_){ localStorage.setItem(STORE_KEY, data); }
+    lastSaved = data; storeWarned = false; setSaveState('saved');
+  }catch(e){
+    setSaveState('error');
+    if(!storeWarned){ storeWarned = true; showStatus('이 기기의 저장 공간이 부족해 마지막 변경을 저장하지 못했습니다. ‘저장 파일 내려받기’로 지금 내용을 꼭 받아 두세요.'); }
+  }
+}
+function persist(){ if(localMode){ clearTimeout(persistTimer); persistTimer = setTimeout(persistNow, 400); } }
+function applyState(d){
+  exList = Array.isArray(d.exList) ? d.exList.filter(x => x && typeof x.id === 'string') : [];
+  [local.works, local.walls].forEach(o => { for(const k in o) delete o[k]; });
+  const arrs = (src, dst) => { if(src && typeof src === 'object') for(const k in src) if(Array.isArray(src[k])) dst[k] = src[k].filter(x => x && typeof x.id === 'string'); };
+  arrs(d.works, local.works); arrs(d.walls, local.walls);
+  applyHallTitle(str(d.title, 60), str(d.subtitle, 140));
+}
+async function loadStore(){
+  try{ await loadStoreInner(); } finally { storeLoaded = true; }
+}
+async function loadStoreInner(){
+  let raw = null, at = 0;
+  try{ const v = await idbGet('state'); if(v && v.json){ raw = v.json; at = v.at; } }catch(_){}
+  if(!raw){ try{ raw = localStorage.getItem(STORE_KEY); }catch(_){} }
+  if(!raw){ setSaveState('saved'); $('saveState').textContent = '아직 저장한 내용이 없습니다 · 바꾸면 자동으로 저장돼요'; return; }
+  try{ applyState(JSON.parse(raw)); lastSaved = raw; setSaveState('saved', at || Date.now()); }catch(_){}
+}
+window.addEventListener('pagehide', () => persistNow());
+document.addEventListener('visibilitychange', () => { if(document.hidden) persistNow(); });
+
+/* backup file */
+async function exportBackup(){
+  await persistNow();
+  const d = new Date(), p2 = n => String(n).padStart(2, '0');
+  const name = `가상전시_저장_${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}_${p2(d.getHours())}${p2(d.getMinutes())}.json`;
+  const json = JSON.stringify({app:APP_ID, version:1, savedAt:d.toISOString(), ...JSON.parse(stateJSON())});
+  const blob = new Blob([json], {type:'application/json'});
+  if(downloadsCap){
+    try{ await downloadsCap.save({filename:name, data:blob}); showStatus(`저장 파일(${name})을 내려받았습니다. 다음에 ‘저장 파일 불러오기’로 이어서 작업하세요.`); }
+    catch(e){
+      const c = e && e.code;
+      if(c === 'declined') return;
+      showStatus(c === 'rate_limited' ? '저장 창이 이미 열려 있습니다. 잠시 뒤 다시 눌러 주세요.' : '이 화면에서는 파일을 내려받을 수 없습니다.');
+    }
+    return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  showStatus(`저장 파일(${name})을 내려받았습니다. 다음에 ‘저장 파일 불러오기’로 이어서 작업하세요.`);
+}
+async function readImport(f){
+  let d = null;
+  try{ d = JSON.parse(await f.text()); }catch(_){}
+  if(!d || d.app !== APP_ID || !Array.isArray(d.exList)){ showStatus('이 전시관에서 내려받은 저장 파일이 아닙니다. ‘가상전시_저장_…json’ 파일을 골라 주세요.'); return; }
+  pendingImport = d;
+  const box = $('importConfirm'); box.replaceChildren();
+  const when = d.savedAt && !isNaN(Date.parse(d.savedAt)) ? new Date(d.savedAt).toLocaleString('ko-KR', {month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+  box.append(el('span', 'meta', `${when ? when + '에 저장한 ' : ''}전시 ${d.exList.length}개를 불러오면 지금 이 기기의 내용이 그것으로 바뀝니다. 지금 내용이 필요하면 먼저 내려받아 두세요.`));
+  const yes = el('button', 'btn primary', '불러오기'), no = el('button', 'btn', '취소');
+  yes.type = no.type = 'button';
+  yes.onclick = () => { const d2 = pendingImport; pendingImport = null; box.hidden = true; if(d2) doImport(d2); };
+  no.onclick = () => { pendingImport = null; box.hidden = true; };
+  box.append(yes, no); box.hidden = false;
+}
+function doImport(d){
+  if(planEdit) setPlanEdit(false);
+  if(moveMode) setMoveMode(false);
+  applyState(d);
+  persistNow(true);
+  if(location.hash){ curSig = ''; location.hash = ''; }
+  else { if(curId) showLobby(); else renderLobby(); }
+  showStatus('저장 파일을 불러왔습니다. 이어서 작업하세요.');
+}
+let db = null, myId = null, canEditAll = false, localMode = false, readOnly = false;
+let selectedId = null, editingId = null, pendingImage = null, editingEx = false;
+let planEdit = false, selWallId = null, drag = null, pendingWalls = null, suppressClick = false;
+let moveMode = false, selWorkId = null, workDrag = null, pendingWorks = null, workGroups = {};
+let tab = 'intro';
+const HINT_WALK = '화면을 끌어서 둘러보고, 화면을 누른 뒤 W A S D 또는 방향키로 걸어요. 작품을 누르면 그 앞으로 갑니다.';
+const HINT_MOVE = '작품을 끌어서 벽 위 원하는 곳으로 옮겨요. 위아래로도, 다른 벽으로도 옮겨집니다. 빈 곳을 끌면 둘러보기.';
+const PLAN_HELP = '점을 누르면 그 작품 앞으로, 빈 곳을 누르면 그 자리로 이동합니다. 눈금 한 칸은 2 m.';
+const round2 = v => Math.round(v*100)/100;
+
+/* ---------- Supabase ----------
+   선생님이 바꿀 곳: Supabase 프로젝트의 Project URL과 Publishable(또는 anon) key를 아래 따옴표 안에 넣으세요.
+   두 값이 비어 있으면 이 기기에만 저장하는 방식으로 동작합니다. */
+const SUPABASE_URL = 'https://vovmsnzmtxukqtzmrjli.supabase.co';   // 예: 'https://abcdefghijk.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_WhpcDbhC8cFjCRCuDPwrXg_ojecr3-f';   // 예: 'sb_publishable_...' (secret / service_role 키는 절대 넣지 마세요)
+const sbOn = /^https:\/\/[^/]+$/.test(SUPABASE_URL.replace(/\/+$/, '')) && SUPABASE_KEY.length > 20 && !SUPABASE_KEY.startsWith('__');
+const SB = SUPABASE_URL.replace(/\/+$/, '');
+const CRED_KEY = 'virtual-gallery-creds';
+let sbMode = false, isAdmin = false;
+const creds = (() => { try{ const c = JSON.parse(localStorage.getItem(CRED_KEY) || '{}'); return {admin: typeof c.admin === 'string' ? c.admin : null, pins: c.pins && typeof c.pins === 'object' ? c.pins : {}}; }catch(_){ return {admin:null, pins:{}}; } })();
+const saveCreds = () => { try{ localStorage.setItem(CRED_KEY, JSON.stringify(creds)); }catch(_){} };
+function sbHeaders(json){
+  const h = {apikey: SUPABASE_KEY};
+  if(SUPABASE_KEY.startsWith('eyJ')) h.Authorization = 'Bearer ' + SUPABASE_KEY;   // legacy anon key
+  if(json) h['Content-Type'] = 'application/json';
+  return h;
+}
+async function sbRpc(fn, args){
+  let r;
+  try{ r = await fetch(`${SB}/rest/v1/rpc/${fn}`, {method:'POST', headers:sbHeaders(true), body:JSON.stringify(args)}); }
+  catch(_){ const e = new Error('network'); e.code = 'unavailable'; throw e; }
+  if(!r.ok){
+    let m = ''; try{ m = (await r.json()).message || ''; }catch(_){}
+    const e = new Error(m); e.code = /denied|bad path/.test(m) ? 'invalid_argument' : /too large/.test(m) ? 'too_large' : 'unavailable'; throw e;
+  }
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+async function sbGet(query){
+  const r = await fetch(`${SB}/rest/v1/docs?${query}`, {headers:sbHeaders(false)});
+  if(!r.ok){ const e = new Error('load ' + r.status); e.code = 'unavailable'; throw e; }
+  return r.json();
+}
+const exIdOf = path => { const p = path.split('/'); return p[0] === 'exhibitions' ? p[1] : null; };
+const credFor = path => isAdmin ? creds.admin : (creds.pins[exIdOf(path)] || null);
+const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/[^A-Za-z0-9-]/g, '');
+/* A small stand-in for the document store the page was written against: collections of JSON docs,
+   live through polling (only changed docs are fetched again). */
+const sbListeners = new Set();
+function sbCollection(coll){
+  return {
+    doc: id => sbDoc(coll + '/' + (id || newId())),
+    onSnapshot(cb, errCb){
+      const L = {coll, cb, errCb, rows:new Map(), sig:null, first:true};
+      sbListeners.add(L); sbPull(L);
+      return () => sbListeners.delete(L);
+    },
+  };
+}
+function sbDoc(path){
+  const parts = path.split('/'), id = parts[parts.length - 1], coll = parts.slice(0, -1).join('/');
+  const after = () => sbListeners.forEach(L => { if(L.coll === coll) sbPull(L); });
+  return {
+    id,
+    collection: name => sbCollection(path + '/' + name),
+    async set(data){
+      const ex = exIdOf(path);
+      await sbRpc('put_doc', {p_path:path, p_data:data, p_pin:credFor(path), p_new_pin: parts.length === 2 && ex ? (creds.pins[ex] || null) : null});
+      after();
+    },
+    async update(fields){ await sbRpc('patch_doc', {p_path:path, p_fields:fields, p_pin:credFor(path)}); after(); },
+    async delete(){ await sbRpc('del_doc', {p_path:path, p_pin:credFor(path)}); after(); },
+    onSnapshot(cb, errCb){
+      return sbCollection(coll).onSnapshot(snap => {
+        const d = snap.docs.find(x => x.id === id);
+        cb({exists:!!d, data:() => d ? d.data() : undefined});
+      }, errCb);
+    },
+  };
+}
+async function sbPull(L){
+  if(L.busy){ L.again = true; return; }
+  L.busy = true;
+  try{
+    const enc = encodeURIComponent(L.coll);
+    const heads = await sbGet(`collection=eq.${enc}&select=path,updated_at&order=path`);
+    const sig = heads.map(h => h.path + '@' + h.updated_at).join('|');
+    if(sig !== L.sig){
+      const stale = heads.filter(h => { const r = L.rows.get(h.path); return !r || r.updated_at !== h.updated_at; }).map(h => h.path);
+      for(let i = 0; i < stale.length; i += 20){
+        const list = stale.slice(i, i + 20).map(x => '"' + x.replace(/"/g, '') + '"').join(',');
+        (await sbGet(`path=in.(${encodeURIComponent(list)})&select=path,data,updated_at`)).forEach(r => L.rows.set(r.path, r));
+      }
+      const keep = new Set(heads.map(h => h.path));
+      [...L.rows.keys()].forEach(k => { if(!keep.has(k)) L.rows.delete(k); });
+      L.sig = sig;
+      if(sbListeners.has(L)) L.cb({docs: heads.filter(h => L.rows.has(h.path)).map(h => { const r = L.rows.get(h.path); return {id:h.path.split('/').pop(), data:() => r.data || {}}; })});
+    }
+    L.first = false;
+  }catch(err){ if(L.first && L.errCb){ L.first = false; L.errCb(err); } }
+  finally{ L.busy = false; if(L.again){ L.again = false; sbPull(L); } }
+}
+setInterval(() => { if(!document.hidden && !workDrag && !drag) sbListeners.forEach(sbPull); }, 15000);
+document.addEventListener('visibilitychange', () => { if(!document.hidden) sbListeners.forEach(sbPull); });
+const sbDb = {collection: sbCollection, doc: sbDoc};
+
+/* who may edit what: the teacher's code opens everything, a student's password opens their own exhibition */
+function updateEditUI(){
+  if(!sbMode) return;
+  readOnly = curId ? !(isAdmin || creds.pins[curId]) : false;
+  ['addWorkBtn2', 'editPlanBtn', 'decoBtn', 'moveWorkBtn'].forEach(id => $(id).hidden = readOnly);
+  if(readOnly){
+    if(planEdit) setPlanEdit(false);
+    if(moveMode) setMoveMode(false);
+    if(!$('decoBar').hidden){ $('decoBar').hidden = true; $('decoBtn').classList.remove('primary'); $('decoBtn').textContent = '색·조명 꾸미기'; }
+  }
+  $('adminBtn').hidden = false;
+  $('adminBtn').textContent = isAdmin ? '선생님 모드 끝내기' : '선생님 모드';
+  $('editTitleBtn').hidden = !isAdmin || !$('titleForm').hidden;
+  renderGate();
+}
+function renderGate(){
+  const g = $('editGate'); g.replaceChildren();
+  if(!sbMode || !curId || !curEx()){ g.hidden = true; return; }
+  g.hidden = false;
+  if(isAdmin){ g.append(el('span', 'badge', '선생님 모드 · 모든 전시를 고칠 수 있어요')); return; }
+  if(creds.pins[curId]){
+    const lock = el('button', 'btn', '편집 잠그기'); lock.type = 'button';
+    lock.onclick = () => { delete creds.pins[curId]; saveCreds(); updateEditUI(); refresh(); };
+    g.append(el('span', 'badge', '편집 중 · 이 기기에서 비밀번호를 기억합니다'), lock);
+    return;
+  }
+  const open = el('button', 'btn primary', '이 전시 편집하기'); open.type = 'button';
+  open.onclick = () => {
+    g.replaceChildren();
+    const f = el('form', 'gate-row'); f.style.margin = '0';
+    const lab = el('label', 'meta', '편집 비밀번호'); lab.htmlFor = 'gatePin';
+    const inp = el('input'); inp.type = 'password'; inp.id = 'gatePin'; inp.maxLength = 40; inp.autocomplete = 'current-password';
+    const ok = el('button', 'btn primary', '확인'), no = el('button', 'btn', '취소'); no.type = 'button';
+    const er = el('span', 'err'); er.hidden = true;
+    no.onclick = renderGate;
+    f.onsubmit = async ev => {
+      ev.preventDefault();
+      const pin = inp.value; if(!pin) return;
+      ok.disabled = true;
+      try{
+        const r = await sbRpc('check_access', {p_ex:curId, p_pin:pin});
+        if(r === 'admin'){ creds.admin = pin; isAdmin = true; saveCreds(); }
+        else if(r === 'owner'){ creds.pins[curId] = pin; saveCreds(); }
+        else { er.textContent = '비밀번호가 맞지 않습니다. 잊었다면 선생님께 말씀해 주세요.'; er.hidden = false; ok.disabled = false; return; }
+        updateEditUI(); refresh();
+      }catch(_){ er.textContent = '확인하지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.'; er.hidden = false; ok.disabled = false; }
+    };
+    f.append(lab, inp, ok, no, er); g.append(f); inp.focus();
+  };
+  g.append(el('span', 'meta', '보기 전용입니다.'), open);
+}
+
+/* ---------- helpers ---------- */
+const safeImg = s => typeof s === 'string' && /^data:image\/(jpeg|png|webp|gif);base64,/.test(s) ? s : null;
+const str = (v, n) => String(v ?? '').slice(0, n);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const normDeg = d => ((Math.round(d) % 360) + 360) % 360;
+function yearKey(s){
+  s = String(s||''); const m = s.match(/(\d{1,4})/); if(!m) return 99999;
+  let y = +m[1]; if(/기원전|BC|B\.C/i.test(s)) y = -y; return y;
+}
+const ordNum = v => (v === '' || v == null || !Number.isFinite(+v)) ? 999 : +v;
+const byOrder = (a,b) => ordNum(a.order)-ordNum(b.order) || yearKey(a.year)-yearKey(b.year) || (a.createdAt||0)-(b.createdAt||0);
+function isLight(hex){ const n = parseInt(hex.slice(1), 16); return (.299*(n>>16) + .587*((n>>8)&255) + .114*(n&255)) > 150; }
+function showStatus(msg){ const b = $('statusBar'); b.textContent = msg || ''; b.hidden = !msg; }
+function el(tag, cls, text){ const n = document.createElement(tag); if(cls) n.className = cls; if(text != null) n.textContent = text; return n; }
+const curEx = () => exList.find(e => e.id === curId) || null;
+const canManage = ex => !readOnly && (localMode || sbMode || canEditAll || (ex && myId && ex.owner === myId));
+
+/* ---------- layout: hall, perimeter faces, free walls ---------- */
+/* Every wall face is {cx, cz} centre, {nx, nz} the normal pointing into the room, {ux, uz} = left→right
+   as seen by a visitor facing it, off = gap from the face's centre line to its surface. */
+function computeLayout(){
+  const ex = curEx(); const sz = SIZES[ex && ex.size] || SIZES.m; const W = sz.W, D = sz.D;
+  const faces = [
+    {key:'N', name:'북쪽 벽', hint:'입구 맞은편', cx:0, cz:-D/2, len:W, nx:0, nz:1, off:.06},
+    {key:'E', name:'동쪽 벽', hint:'들어서서 오른쪽', cx:W/2, cz:0, len:D, nx:-1, nz:0, off:.06},
+    {key:'S', name:'남쪽 벽', hint:'입구 쪽', cx:0, cz:D/2, len:W, nx:0, nz:-1, off:.06},
+    {key:'W', name:'서쪽 벽', hint:'들어서서 왼쪽', cx:-W/2, cz:0, len:D, nx:1, nz:0, off:.06},
+  ];
+  const pws = walls.slice().sort((a,b) => (a.createdAt||0)-(b.createdAt||0)).map((w, j) => {
+    const len = clamp(+w.len || 4, 1.5, 10), deg = normDeg(+w.rot || 0), th = deg*Math.PI/180;
+    return {id:w.id, label:`벽 ${j+1}`, cx:clamp(+w.x || 0, -W/2+.6, W/2-.6), cz:clamp(+w.z || 0, -D/2+.6, D/2-.6),
+      len, deg, th, ux:Math.cos(th), uz:Math.sin(th), color: isHex(w.color) ? w.color.toLowerCase() : null};
+  });
+  pws.forEach(pw => [0,1].forEach(side => {
+    const sg = side ? -1 : 1;
+    faces.push({key:pw.id + '|' + side, name:`${pw.label} ${side ? 'B' : 'A'}면`, cx:pw.cx, cz:pw.cz, len:pw.len,
+      nx:-pw.uz*sg, nz:pw.ux*sg, off:.16, wall:pw, side});
+  }));
+  faces.forEach(f => { f.ux = f.nz; f.uz = -f.nx; });
+  const faceByKey = Object.fromEntries(faces.map(f => [f.key, f]));
+  const spotOf = w => faceByKey[w.spot] ? w.spot : 'N';
+  /* A work with a numeric `at` is pinned where a student dragged it (metres from the face centre);
+     the rest are spread evenly along the face as before. `y` (centre height) and `sz` (height) are optional for any work. */
+  const isPinned = w => typeof w.at === 'number' && Number.isFinite(w.at);
+  const slots = [], byId = {}; let cat = 1;
+  faces.forEach(f => {
+    const list = works.filter(w => spotOf(w) === f.key);
+    const auto = list.filter(w => !isPinned(w)).sort(byOrder), pinned = list.filter(isPinned);
+    const fs = [];
+    const cnt = auto.length || (pinned.length ? 0 : 1);
+    for(let k=0;k<cnt;k++) fs.push({along: f.len*(k+1)/(cnt+1) - f.len/2, maxW:clamp(f.len/cnt - .95, .5, 2.6), work:auto[k] || null});
+    pinned.forEach(w => fs.push({along: clamp(w.at, -f.len/2 + .2, f.len/2 - .2), maxW: Math.max(.5, f.len - .3), work:w, pinned:true}));
+    fs.sort((a,b) => a.along - b.along).forEach(s => {
+      const w = s.work;
+      Object.assign(s, {x:f.cx + f.ux*s.along + f.nx*f.off, z:f.cz + f.uz*s.along + f.nz*f.off, nx:f.nx, nz:f.nz, face:f,
+        no: w ? cat++ : null, y: w && Number.isFinite(w.y) ? w.y : null, hFix: w && Number.isFinite(w.sz) ? clamp(w.sz, .3, 2.4) : null});
+      slots.push(s); if(w) byId[w.id] = s;
+    });
+  });
+  return {W, D, faces, faceByKey, pws, wallsById:Object.fromEntries(pws.map(p => [p.id, p])), slots, byId,
+    kiosk:{cx:0, cz:D/2-3.2}, spawn:{x:0, z:D/2-1.1}};
+}
+/* Picture size and centre height on its face; leaves room below for the floor and above for the picture light. */
+function workDims(s, aspect){
+  const f = s.face, top = f.wall ? WALL_H : H;
+  const cap = s.hFix ? f.len - .3 : s.maxW;
+  let h = s.hFix || Math.min(1.7, s.maxW/aspect), w = h*aspect;
+  if(w > cap){ w = cap; h = w/aspect; }
+  if(h > top - .9){ h = top - .9; w = h*aspect; }
+  const y = clamp(s.y == null ? 1.65 : s.y, h/2 + .3, top - h/2 - .5);
+  return {w, h, y, aspect};
+}
+
+/* ---------- 3D ---------- */
+const canvas = $('c'), vp = $('viewport');
+let renderer, scene, camera, galleryGroup = null, clickables = [];
+const texCache = new Map();
+const pos = {x:0, z:5}; let yaw = 0, pitch = 0;
+const keys = {};
+let tween = null, stageActive = false, running = true;
+
+function makeCanvasTex(w, h, draw){
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
+}
+function wrapText(ctx, text, maxW, maxLines){
+  const out = []; let line = ''; const s = String(text);
+  for(const ch of s){
+    if(ctx.measureText(line + ch).width > maxW && line){ out.push(line); line = ch; if(out.length === maxLines) break; }
+    else line += ch;
+  }
+  if(out.length < maxLines && line) out.push(line);
+  if(out.length === maxLines && out.join('').length < s.length) out[maxLines-1] = out[maxLines-1].slice(0, -1) + '…';
+  return out;
+}
+function wrapParas(ctx, text, maxW, maxLines){
+  const out = [];
+  for(const p of String(text).split(/\n+/)){
+    if(out.length >= maxLines) break;
+    const ls = wrapText(ctx, p, maxW, maxLines - out.length);
+    out.push(...ls, '');
+  }
+  while(out.length && out[out.length-1] === '') out.pop();
+  return out.slice(0, maxLines);
+}
+/* Floor patterns are drawn from the chosen base colour, so any colour works with any pattern.
+   `metres` is how much floor one copy of the texture covers. */
+const hexRgb = h => { const n = parseInt(h.slice(1), 16); return [n>>16, (n>>8)&255, n&255]; };
+const shade = (rgb, f) => `rgb(${rgb.map(v => Math.round(clamp(v*f, 0, 255))).join(',')})`;
+function drawFloor(g, w, h, style, hex){
+  const c = hexRgb(hex), rnd = (a, b) => a + Math.random()*(b-a);
+  g.fillStyle = shade(c, 1); g.fillRect(0, 0, w, h);
+  const grain = (x, y, len, vertical, n) => {
+    g.strokeStyle = 'rgba(0,0,0,.09)'; g.lineWidth = 1;
+    for(let i=0;i<n;i++){ g.beginPath();
+      if(vertical){ const xx = x + rnd(4, 28); g.moveTo(xx, y); g.lineTo(xx + rnd(-2, 2), y + len); }
+      else { const yy = y + rnd(4, 28); g.moveTo(x, yy); g.lineTo(x + len, yy + rnd(-2, 2)); }
+      g.stroke(); }
+  };
+  if(style === 'wood'){
+    const ph = w/8;
+    for(let y=0; y<h; y+=ph) for(let x=-((y/ph)%2)*(w/4); x<w; x+=w/2){
+      g.fillStyle = shade(c, rnd(.86, 1.1)); g.fillRect(x+1, y+1, w/2-2, ph-2); grain(x, y, w/2, false, 6);
+    }
+  } else if(style === 'parquet'){
+    const b = w/4, s = b/4;
+    for(let by=0; by<4; by++) for(let bx=0; bx<4; bx++){
+      const vert = (bx + by) % 2 === 0;
+      for(let k=0;k<4;k++){
+        g.fillStyle = shade(c, rnd(.84, 1.1));
+        if(vert){ g.fillRect(bx*b + k*s + 1, by*b + 1, s-2, b-2); grain(bx*b + k*s, by*b, b, true, 2); }
+        else { g.fillRect(bx*b + 1, by*b + k*s + 1, b-2, s-2); grain(bx*b, by*b + k*s, b, false, 2); }
+      }
+    }
+  } else if(style === 'tile'){
+    const t = w/4;
+    for(let y=0; y<4; y++) for(let x=0; x<4; x++){ g.fillStyle = shade(c, rnd(.95, 1.05)); g.fillRect(x*t, y*t, t, t); }
+    g.strokeStyle = shade(c, .72); g.lineWidth = 3;
+    for(let i=0;i<=4;i++){ g.beginPath(); g.moveTo(i*t, 0); g.lineTo(i*t, h); g.moveTo(0, i*t); g.lineTo(w, i*t); g.stroke(); }
+  } else if(style === 'concrete'){
+    for(let i=0;i<40;i++){ g.fillStyle = shade(c, rnd(.92, 1.08)); g.globalAlpha = .25; g.beginPath(); g.arc(rnd(0, w), rnd(0, h), rnd(30, 120), 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+    for(let i=0;i<5000;i++){ g.fillStyle = shade(c, rnd(.75, 1.2)); g.fillRect(rnd(0, w), rnd(0, h), 1.5, 1.5); }
+    g.strokeStyle = shade(c, .8); g.lineWidth = 2; g.strokeRect(0, 0, w, h);
+  } else if(style === 'marble'){
+    g.lineCap = 'round';
+    for(let i=0;i<14;i++){
+      g.strokeStyle = i % 3 ? shade(c, .72) : shade(c, 1.18); g.globalAlpha = rnd(.15, .45); g.lineWidth = rnd(1, 4);
+      g.beginPath(); let x = rnd(-50, w), y = rnd(0, h); g.moveTo(x, y);
+      for(let k=0;k<6;k++){ const nx = x + rnd(40, 110), ny = y + rnd(-60, 60); g.quadraticCurveTo(x + rnd(0, 60), y + rnd(-50, 50), nx, ny); x = nx; y = ny; }
+      g.stroke();
+    }
+    g.globalAlpha = 1; g.strokeStyle = shade(c, .85); g.lineWidth = 2; g.strokeRect(0, 0, w, h);
+  }
+}
+const floorCache = new Map();
+function floorTex(style, hex){
+  const key = style + hex;
+  if(floorCache.has(key)) return floorCache.get(key);
+  if(floorCache.size > 10){ floorCache.forEach(t => t.dispose()); floorCache.clear(); }
+  const t = makeCanvasTex(512, 512, (g, w, h) => drawFloor(g, w, h, style, hex));
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.userData = {metres: (style === 'concrete' || style === 'marble') ? 6 : 3};
+  floorCache.set(key, t); return t;
+}
+let glowTex;
+function sharedTextures(){
+  glowTex = makeCanvasTex(256, 256, (g, w, h) => {
+    const gr = g.createRadialGradient(w/2, h*.42, 0, w/2, h*.42, w/2);
+    gr.addColorStop(0, 'rgba(255,240,215,.55)'); gr.addColorStop(.6, 'rgba(255,235,205,.12)'); gr.addColorStop(1, 'rgba(255,235,205,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  });
+}
+function kioskTex(ex, back){
+  return makeCanvasTex(1080, 880, (g, w, h) => {
+    g.fillStyle = '#f4f2ec'; g.fillRect(0, 0, w, h);
+    g.textBaseline = 'top';
+    const pad = 70, mw = w - pad*2;
+    if(!back){
+      g.fillStyle = '#8a6a2a'; g.font = '500 28px "IBM Plex Mono", monospace';
+      g.fillText(`${ex.group || ''} 기획전`, pad, 70);
+      g.fillStyle = '#1c2220'; g.font = '800 86px "Nanum Myeongjo", serif';
+      const tl = wrapText(g, ex.title || '', mw, 3); tl.forEach((l, i) => g.fillText(l, pad, 130 + i*104));
+      let y = 130 + tl.length*104 + 30;
+      g.fillStyle = '#3a423f'; g.font = '700 40px "Nanum Myeongjo", serif';
+      const th = wrapText(g, ex.theme || '', mw, 3); th.forEach((l, i) => g.fillText(l, pad, y + i*56));
+      g.fillStyle = '#5d6763'; g.font = '400 26px "IBM Plex Sans KR", sans-serif';
+      if(ex.members) wrapText(g, '참여 · ' + ex.members, mw, 2).forEach((l, i) => g.fillText(l, pad, h - 150 + i*36));
+      g.fillStyle = '#8a6a2a'; g.font = '500 24px "IBM Plex Sans KR", sans-serif';
+      g.fillText('주제 의도는 이 판의 뒷면에 있습니다', pad, h - 70);
+    } else {
+      g.fillStyle = '#8a6a2a'; g.font = '500 28px "IBM Plex Mono", monospace'; g.fillText('주제 의도', pad, 70);
+      g.fillStyle = '#1c2220'; g.font = '800 50px "Nanum Myeongjo", serif';
+      wrapText(g, ex.title || '', mw, 1).forEach(l => g.fillText(l, pad, 120));
+      g.fillStyle = '#2c3431'; g.font = '400 30px "IBM Plex Sans KR", sans-serif';
+      const lines = wrapParas(g, ex.intent || '아직 주제 의도를 적지 않았습니다.', mw, 15);
+      lines.forEach((l, i) => g.fillText(l, pad, 210 + i*42));
+    }
+  });
+}
+function labelTex(slot){
+  const w = slot.work;
+  return makeCanvasTex(512, 288, (g, W, Hh) => {
+    g.fillStyle = '#f6f4ee'; g.fillRect(0, 0, W, Hh);
+    g.fillStyle = '#8a6a2a'; g.font = '500 22px "IBM Plex Mono", monospace'; g.textBaseline = 'top';
+    g.fillText('CAT. ' + String(slot.no).padStart(2, '0'), 24, 20);
+    g.fillStyle = '#1c2220'; g.font = '700 34px "Nanum Myeongjo", serif';
+    const tl = wrapText(g, w.title || '', W-48, 2); tl.forEach((l, i) => g.fillText(l, 24, 56 + i*42));
+    let y = 56 + tl.length*42 + 8;
+    g.font = '500 24px "IBM Plex Sans KR", sans-serif'; g.fillStyle = '#3a423f';
+    g.fillText(wrapText(g, w.artist || '', W-48, 1)[0] || '', 24, y); y += 34;
+    g.font = '400 21px "IBM Plex Sans KR", sans-serif'; g.fillStyle = '#5d6763';
+    g.fillText(wrapText(g, [w.year, w.period].filter(Boolean).join(' · '), W-48, 1)[0] || '', 24, y);
+  });
+}
+function emptyTex(light){
+  const c = light ? '28,34,32' : '255,255,255';
+  return makeCanvasTex(400, 500, (g, w, h) => {
+    g.fillStyle = `rgba(${c},.06)`; g.fillRect(0, 0, w, h);
+    g.strokeStyle = `rgba(${c},.5)`; g.setLineDash([14, 10]); g.lineWidth = 4; g.strokeRect(10, 10, w-20, h-20);
+    g.fillStyle = `rgba(${c},.75)`; g.textAlign = 'center';
+    g.font = '800 120px "Nanum Myeongjo", serif'; g.fillText('+', w/2, h/2-10);
+    g.font = '500 30px "IBM Plex Sans KR", sans-serif'; g.fillText('빈 자리', w/2, h/2+60); g.fillText('작품을 올려 주세요', w/2, h/2+100);
+  });
+}
+function loadWorkTexture(w){
+  const src = safeImg(w.image); if(!src) return null;
+  const key = w.id + ':' + (w.updatedAt || 0);
+  if(texCache.has(key)) return texCache.get(key);
+  const entry = {tex:null, aspect:w.aspect || .8, ready:false};
+  texCache.set(key, entry);
+  const img = new Image();
+  img.onload = () => {
+    entry.aspect = img.naturalWidth / img.naturalHeight;
+    const t = new THREE.Texture(img); t.needsUpdate = true; t.anisotropy = 8; t.minFilter = THREE.LinearMipmapLinearFilter;
+    entry.tex = t; entry.ready = true; scheduleRebuild();
+  };
+  img.src = src;
+  return entry;
+}
+let rebuildTimer = 0;
+function scheduleRebuild(){ clearTimeout(rebuildTimer); rebuildTimer = setTimeout(buildGallery, 60); }
+const disposables = [];
+const track = o => { disposables.push(o); return o; };
+
+function buildGallery(){
+  if(!renderer) return;
+  if(galleryGroup){ scene.remove(galleryGroup); galleryGroup = null; disposables.splice(0).forEach(o => o.dispose()); }
+  clickables = [];
+  const ex = curEx(); if(!ex || !layout) return;
+  const g = galleryGroup = new THREE.Group();
+  const {W, D} = layout;
+  const col = colorOf(ex.wallColor), light = isLight(col.hex);
+
+  const fl = floorOf(ex);
+  const fmat = fl.style === 'solid'
+    ? new THREE.MeshStandardMaterial({color:new THREE.Color(fl.hex), roughness:.8})
+    : (() => { const t = floorTex(fl.style, fl.hex); t.repeat.set(W/t.userData.metres, D/t.userData.metres);
+        return new THREE.MeshStandardMaterial({map:t, roughness: fl.style === 'marble' ? .35 : .8}); })();
+  const floor = new THREE.Mesh(track(new THREE.PlaneGeometry(W, D)), track(fmat));
+  floor.rotation.x = -Math.PI/2; g.add(floor);
+  const ceil = new THREE.Mesh(track(new THREE.PlaneGeometry(W, D)), track(new THREE.MeshStandardMaterial({color:0x2a2c2c, roughness:1})));
+  ceil.rotation.x = Math.PI/2; ceil.position.y = H; g.add(ceil);
+
+  const wm = track(new THREE.MeshStandardMaterial({color:new THREE.Color(col.hex), roughness:.95}));
+  const pm = track(new THREE.MeshStandardMaterial({color:new THREE.Color(col.hex).offsetHSL(0, 0, light ? -.04 : .05), roughness:.95}));
+  const base = track(new THREE.MeshStandardMaterial({color:0x1e1f1f, roughness:.8}));
+  const frameMat = track(new THREE.MeshStandardMaterial({color:0x6e5426, roughness:.45, metalness:.55}));
+  const glowMat = track(new THREE.MeshBasicMaterial({map:glowTex, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:.55}));
+  const emptyMat = track(new THREE.MeshBasicMaterial({map:track(emptyTex(light)), transparent:true}));
+  const box = (w, h, d, mat, x, y, z) => { const m = new THREE.Mesh(track(new THREE.BoxGeometry(w, h, d)), mat); m.position.set(x, y, z); g.add(m); return m; };
+  const plane = (w, h, mat) => new THREE.Mesh(track(new THREE.PlaneGeometry(w, h)), mat);
+
+  box(W+.4, H, .2, wm, 0, H/2, -D/2-.1); box(W+.4, H, .2, wm, 0, H/2, D/2+.1);
+  box(.2, H, D, wm, -W/2-.1, H/2, 0); box(.2, H, D, wm, W/2+.1, H/2, 0);
+  box(W, .14, .04, base, 0, .07, -D/2+.02); box(W, .14, .04, base, 0, .07, D/2-.02);
+  box(.04, .14, D, base, -W/2+.02, .07, 0); box(.04, .14, D, base, W/2-.02, .07, 0);
+
+  const nxL = Math.max(1, Math.round(W/12)), nzL = Math.max(1, Math.round(D/12));
+  roomLights = [];
+  for(let i=0;i<nxL;i++) for(let j=0;j<nzL;j++){
+    const p = new THREE.PointLight(0xfff1dc, .5, 16, 1.6);
+    p.position.set(-W/2 + W*(i+.5)/nxL, H-.4, -D/2 + D*(j+.5)/nzL); g.add(p); roomLights.push(p);
+  }
+
+  // ceiling spotlights, one aimed at each work
+  const lt = lightOf(ex);
+  let spotCount = 0;
+  const stemGeo = track(new THREE.CylinderGeometry(.012, .012, .3, 8));
+  const canGeo = track(new THREE.CylinderGeometry(.055, .08, .2, 16));
+  const lensGeo = track(new THREE.CircleGeometry(.05, 16));
+  const fixMat = track(new THREE.MeshStandardMaterial({color:0x1b1c1c, roughness:.5, metalness:.6}));
+  const lensMat = track(new THREE.MeshBasicMaterial({color:lt.spots ? lt.tone.hex : 0x555555}));
+  const beamMat = track(new THREE.MeshBasicMaterial({color:lt.tone.hex, transparent:true, opacity:.035, depthWrite:false,
+    blending:THREE.AdditiveBlending, side:THREE.DoubleSide}));
+  const DOWN = new THREE.Vector3(0, -1, 0);
+  function addSpot(s, w, h, y){
+    const tgt = new THREE.Vector3(s.x, y, s.z);
+    const org = new THREE.Vector3(clamp(s.x + s.nx*1.7, -W/2+.3, W/2-.3), H - .34, clamp(s.z + s.nz*1.7, -D/2+.3, D/2-.3));
+    const dir = tgt.clone().sub(org), L = dir.length(); dir.normalize();
+    const stem = new THREE.Mesh(stemGeo, fixMat); stem.position.set(org.x, H - .15, org.z); g.add(stem);
+    const can = new THREE.Mesh(canGeo, fixMat); can.position.copy(org); can.quaternion.setFromUnitVectors(DOWN, dir); g.add(can);
+    const lens = new THREE.Mesh(lensGeo, lensMat); lens.position.copy(org).addScaledVector(dir, .101);
+    lens.lookAt(lens.position.clone().add(dir)); g.add(lens);
+    if(!lt.spots) return false;
+    const ang = Math.atan((Math.max(w, h)/2 + .35) / L);
+    const beam = new THREE.Mesh(track(new THREE.ConeGeometry(Math.tan(ang)*L, L, 24, 1, true).translate(0, -L/2, 0)), beamMat);
+    beam.position.copy(org); beam.quaternion.setFromUnitVectors(DOWN, dir); g.add(beam);
+    if(spotCount >= MAX_SPOTS) return false;
+    const sp = new THREE.SpotLight(lt.tone.hex, 1.1, L*2.4, ang, .5, 1.2);
+    sp.position.copy(org); sp.target.position.copy(tgt); g.add(sp, sp.target); spotCount++;
+    return true;
+  }
+  // picture light: a brass lamp on two arms just above the frame, built inside the work's group so it moves with the work
+  const brassMat = track(new THREE.MeshStandardMaterial({color:0xa07c3a, roughness:.32, metalness:.85}));
+  const plateGeo = track(new THREE.BoxGeometry(.07, .1, .02));
+  const ARM = {dy:.07, dz:.33}, armLen = Math.hypot(ARM.dy, ARM.dz);
+  const armGeo = track(new THREE.CylinderGeometry(.009, .009, armLen, 8));
+  const armQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, ARM.dy, ARM.dz).normalize());
+  function addLamp(grp, w, h){
+    const yT = h/2 + .08, yL = yT + .2, zL = .29, hl = clamp(w*.55, .3, 1.1);
+    const hood = new THREE.Mesh(track(new THREE.CylinderGeometry(.042, .042, hl, 20)), brassMat);
+    hood.rotation.z = Math.PI/2; hood.position.set(0, yL, zL); grp.add(hood);
+    const capGeo = track(new THREE.CircleGeometry(.042, 20));
+    [-1, 1].forEach(sd => { const c = new THREE.Mesh(capGeo, brassMat); c.position.set(sd*hl/2, yL, zL); c.rotation.y = sd*Math.PI/2; grp.add(c); });
+    const strip = new THREE.Mesh(track(new THREE.PlaneGeometry(hl*.92, .034)), lensMat);
+    strip.rotation.x = Math.PI/2; strip.position.set(0, yL - .043, zL); grp.add(strip);
+    (hl > .6 ? [-hl*.3, hl*.3] : [0]).forEach(ax => {
+      const plate = new THREE.Mesh(plateGeo, brassMat); plate.position.set(ax, yL - ARM.dy, -.05); grp.add(plate);
+      const arm = new THREE.Mesh(armGeo, brassMat); arm.quaternion.copy(armQ);
+      arm.position.set(ax, yL - ARM.dy/2, -.04 + ARM.dz/2); grp.add(arm);
+    });
+    if(!lt.spots || spotCount >= MAX_SPOTS) return false;
+    const src = new THREE.Vector3(0, yL - .06, zL), tgt = new THREE.Vector3(0, -h*.15, 0);
+    const axis = tgt.clone().sub(src);
+    let ang = 0;
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => { ang = Math.max(ang, axis.angleTo(new THREE.Vector3(a*w/2, b*h/2, 0).sub(src))); });
+    const sp = new THREE.SpotLight(lt.tone.hex, 1.6, axis.length()*2.6 + 1.2, Math.min(1.4, ang + .12), .55, 1);
+    sp.position.copy(src); sp.target.position.copy(tgt); grp.add(sp, sp.target); spotCount++;
+    return true;
+  }
+
+  const ownMats = {};
+  const matFor = hex => ownMats[hex] || (ownMats[hex] = track(new THREE.MeshStandardMaterial({color:new THREE.Color(hex), roughness:.95})));
+  layout.pws.forEach(pw => {
+    const m = box(pw.len, WALL_H, .2, pw.color ? matFor(pw.color) : pm, pw.cx, WALL_H/2, pw.cz); m.rotation.y = -pw.th;
+    const b = box(pw.len+.02, .14, .24, base, pw.cx, .07, pw.cz); b.rotation.y = -pw.th;
+  });
+
+  // intro panel at the entrance: title + theme in front, intent on the back
+  const k = layout.kiosk;
+  box(KIOSK.w, KIOSK.h, .14, base, k.cx, KIOSK.h/2, k.cz);
+  const fp = plane(2.6, 2.12, track(new THREE.MeshBasicMaterial({map:track(kioskTex(ex, false))})));
+  fp.position.set(k.cx, 1.28, k.cz + .071); g.add(fp);
+  const bp = plane(2.6, 2.12, track(new THREE.MeshBasicMaterial({map:track(kioskTex(ex, true))})));
+  bp.position.set(k.cx, 1.28, k.cz - .071); bp.rotation.y = Math.PI; g.add(bp);
+
+  workGroups = {};
+  layout.slots.forEach(s => {
+    const grp = new THREE.Group();
+    grp.position.set(s.x, 1.65, s.z);
+    grp.rotation.y = Math.atan2(s.nx, s.nz);
+    if(s.work){
+      const e = loadWorkTexture(s.work);
+      const a = e ? e.aspect : (s.work.aspect || .8);
+      const {w, h, y} = s.dims = workDims(s, a);
+      grp.position.y = y;
+      const lit = s.work.lamp !== false;
+      const fr = new THREE.Mesh(track(new THREE.BoxGeometry(w+.16, h+.16, .06)), frameMat); grp.add(fr);
+      // lit material: the light brightens it; a little self-light keeps it readable when lights are off
+      const pmat = e && e.ready
+        ? track(new THREE.MeshStandardMaterial({map:e.tex, emissive:0xffffff, emissiveMap:e.tex, emissiveIntensity: lt.spots && lit ? .15 : .4, roughness:.9}))
+        : track(new THREE.MeshBasicMaterial({color:0x3a3d3c}));
+      const pic = plane(w, h, pmat); pic.position.z = .032; grp.add(pic);
+      const realLight = lit && (lt.style === 'lamp' ? addLamp(grp, w, h) : addSpot(s, w, h, y));
+      if(lt.spots && lit && !realLight){ const glow = plane(w+2.4, h+2.4, glowMat); glow.position.set(0, .25, -.05); grp.add(glow); }
+      const lab = plane(.5, .28, track(new THREE.MeshBasicMaterial({map:track(labelTex(s))}))); lab.position.set(w/2+.42, Math.max(-.45, -h/2 + .14), -.04); grp.add(lab);
+      [fr, pic, lab].forEach(m => { m.userData.workId = s.work.id; clickables.push(m); });
+      workGroups[s.work.id] = grp;
+    } else {
+      const sc = s.face.wall ? .75 : 1;
+      const ph = plane(1.1*sc, 1.375*sc, emptyMat); ph.position.z = -.04; grp.add(ph);
+      ph.userData.spot = s.face.key; clickables.push(ph);
+    }
+    g.add(grp);
+  });
+  scene.add(g);
+  applyAmbient();
+  syncWorkCtl();
+}
+let hemi = null, roomLights = [];
+function applyAmbient(){
+  if(!hemi) return;
+  const lt = lightOf(curEx());
+  hemi.intensity = (lt.spots ? .1 : .2) + lt.ambient*(lt.spots ? .6 : .8);
+  hemi.color.setHex(lt.tone.hex);
+  roomLights.forEach(p => { p.intensity = lt.ambient*.7; p.color.setHex(lt.tone.hex); });
+}
+
+function initThree(){
+  try{
+    if(!window.THREE) throw new Error('no three');
+    renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+  }catch(e){ $('nogl').hidden = false; $('hint').hidden = true; return false; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0e0f0f);
+  camera = new THREE.PerspectiveCamera(62, 16/9, .05, 200);
+  camera.rotation.order = 'YXZ';
+  hemi = new THREE.HemisphereLight(0xfff6ea, 0x3a2e24, .75); scene.add(hemi);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;   // keeps spotlit paintings from blowing out
+  sharedTextures();
+  new ResizeObserver(resize).observe(vp); resize();
+  new IntersectionObserver(es => { running = es[0].isIntersecting; loop.last = performance.now(); }).observe(vp);
+  bindControls();
+  requestAnimationFrame(loop);
+  return true;
+}
+function resize(){
+  if(!renderer) return;
+  const w = vp.clientWidth, h = vp.clientHeight; if(!w || !h) return;
+  renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+function segHit(x, z, cx, cz, ux, uz, len, half){
+  const dx = x - cx, dz = z - cz;
+  return Math.abs(dx*ux + dz*uz) < len/2 + .3 && Math.abs(-dx*uz + dz*ux) < half + .3;
+}
+function blocked(x, z){
+  if(!layout) return false;
+  if(Math.abs(x) > layout.W/2 - .45 || Math.abs(z) > layout.D/2 - .45) return true;
+  for(const pw of layout.pws) if(segHit(x, z, pw.cx, pw.cz, pw.ux, pw.uz, pw.len, .1)) return true;
+  return segHit(x, z, layout.kiosk.cx, layout.kiosk.cz, 1, 0, KIOSK.w, .07);
+}
+function loop(now){
+  requestAnimationFrame(loop);
+  if(!running || document.hidden || tab !== 'hall' || !curId) return;
+  const dt = Math.min(.05, (now - (loop.last || now))/1000); loop.last = now;
+  if(tween){
+    const t = Math.min(1, (now - tween.t0)/tween.dur), e = t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
+    pos.x = tween.x0 + (tween.x1 - tween.x0)*e; pos.z = tween.z0 + (tween.z1 - tween.z0)*e;
+    yaw = tween.y0 + tween.dy*e; pitch = tween.p0*(1-e);
+    if(t >= 1) tween = null;
+  } else {
+    const fwd = (keys.fwd?1:0) - (keys.back?1:0), st = (keys.right?1:0) - (keys.left?1:0), turn = (keys.turnL?1:0) - (keys.turnR?1:0);
+    yaw += turn * 1.8 * dt;
+    if(fwd || st){
+      const sp = 3.2*dt, fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+      const dx = (fx*fwd - fz*st)*sp, dz = (fz*fwd + fx*st)*sp;
+      const stuck = blocked(pos.x, pos.z);   // a wall was just moved onto the visitor: let them walk out
+      if(stuck || !blocked(pos.x + dx, pos.z)) pos.x += dx;
+      if(stuck || !blocked(pos.x, pos.z + dz)) pos.z += dz;
+    }
+  }
+  camera.position.set(pos.x, EYE, pos.z); camera.rotation.set(pitch, yaw, 0);
+  renderer.render(scene, camera);
+  updateMarker();
+}
+function goTo(x, z, y2, dur){
+  if(y2 === undefined) y2 = yaw;
+  const dy = ((y2 - yaw + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI;
+  tween = {t0:performance.now(), dur:dur || 900, x0:pos.x, z0:pos.z, x1:x, z1:z, y0:yaw, dy, p0:pitch};
+  if(!renderer){ pos.x = x; pos.z = z; yaw = y2; tween = null; updateMarker(); }
+}
+function goToWork(id, open = true){
+  const s = layout && layout.byId[id]; if(!s) return;
+  let px = s.x, pz = s.z;
+  for(const d of [2.8, 2.1, 1.5]){ px = s.x + s.nx*d; pz = s.z + s.nz*d; if(!blocked(px, pz)) break; }
+  goTo(px, pz, Math.atan2(s.nx, s.nz));
+  selectedId = id; if(open) renderInfo(); markSelected();
+}
+function bindControls(){
+  let down = null;
+  canvas.addEventListener('pointerdown', e => {
+    down = {x:e.clientX, y:e.clientY, moved:0}; canvas.setPointerCapture(e.pointerId); vp.focus({preventScroll:true}); stageActive = true;
+    if(moveMode && !readOnly && layout){
+      const hit = hitAt(e), id = hit && hit.object.userData.workId, s = id && layout.byId[id];
+      if(s && s.dims){
+        const fh = faceHit(e), same = fh && fh.face === s.face;
+        startWorkDrag(id, '3d', same ? fh.along - s.along : 0, same ? fh.y - s.dims.y : 0);
+        down.work = true;
+      }
+    }
+  });
+  canvas.addEventListener('pointermove', e => {
+    if(!down) return;
+    const dx = e.clientX - down.x, dy = e.clientY - down.y;
+    down.moved += Math.abs(dx) + Math.abs(dy); down.x = e.clientX; down.y = e.clientY;
+    if(down.work){
+      if(down.moved > 4 && workDrag){ const fh = faceHit(e); if(fh) applyWorkPos(workDrag.id, fh.face, fh.along - workDrag.da, fh.y - workDrag.dy); }
+      return;
+    }
+    if(down.moved > 4){ tween = null; yaw += dx*.0045; pitch = clamp(pitch + dy*.0035, -.6, .6); }
+  });
+  canvas.addEventListener('pointerup', e => {
+    if(down && down.work){ down = null; endWorkDrag('3d'); return; }
+    if(down && down.moved <= 4) pick(e); down = null;
+  });
+  canvas.addEventListener('pointercancel', () => { if(down && down.work) endWorkDrag('3d'); down = null; });
+  document.addEventListener('pointerdown', e => { if(!vp.contains(e.target)) stageActive = false; });
+  const map = {KeyW:'fwd', ArrowUp:'fwd', KeyS:'back', ArrowDown:'back', KeyA:'left', KeyD:'right', ArrowLeft:'turnL', ArrowRight:'turnR', KeyQ:'turnL', KeyE:'turnR'};
+  window.addEventListener('keydown', e => {
+    if(!stageActive || tab !== 'hall' || !$('modal').hidden || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    const k = map[e.code]; if(!k) return;
+    keys[k] = true; tween = null; e.preventDefault();
+  });
+  window.addEventListener('keyup', e => { const k = map[e.code]; if(k) keys[k] = false; });
+  window.addEventListener('blur', () => { for(const k in keys) keys[k] = false; });
+  document.querySelectorAll('.pad button').forEach(b => {
+    const k = b.dataset.k;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); keys[k] = true; tween = null; stageActive = true; b.setPointerCapture(e.pointerId); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, () => keys[k] = false));
+    b.addEventListener('contextmenu', e => e.preventDefault());
+  });
+}
+const ray = window.THREE ? new THREE.Raycaster() : null;
+function setRay(e){
+  const r = canvas.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left)/r.width)*2 - 1, -((e.clientY - r.top)/r.height)*2 + 1), camera);
+  return ray.ray;
+}
+function hitAt(e){ setRay(e); return ray.intersectObjects(clickables, false)[0] || null; }
+/* Nearest wall face the pointer's ray meets from the front: which face, how far along it, at what height. */
+function faceHit(e){
+  const {origin:o, direction:d} = setRay(e);
+  let best = null;
+  layout.faces.forEach(f => {
+    const denom = d.x*f.nx + d.z*f.nz; if(denom > -1e-4) return;
+    const px = f.cx + f.nx*f.off, pz = f.cz + f.nz*f.off;
+    const t = ((px - o.x)*f.nx + (pz - o.z)*f.nz)/denom; if(t <= 0) return;
+    const hx = o.x + d.x*t, hy = o.y + d.y*t, hz = o.z + d.z*t;
+    const along = (hx - f.cx)*f.ux + (hz - f.cz)*f.uz;
+    if(Math.abs(along) > f.len/2 + .05 || hy < 0 || hy > (f.wall ? WALL_H : H)) return;
+    if(!best || t < best.t) best = {t, face:f, along, y:hy};
+  });
+  return best;
+}
+/* Nearest face to a point on the floor plan (a free wall only from the side the point is on). */
+function nearestFace(p){
+  let best = null;
+  layout.faces.forEach(f => {
+    const dx = p.x - f.cx, dz = p.z - f.cz;
+    if(f.wall && dx*f.nx + dz*f.nz < -.02) return;
+    const along = clamp(dx*f.ux + dz*f.uz, -f.len/2, f.len/2);
+    const dist = Math.hypot(p.x - (f.cx + f.ux*along), p.z - (f.cz + f.uz*along));
+    if(!best || dist < best.dist) best = {face:f, along, dist};
+  });
+  return best;
+}
+function pick(e){
+  const hit = hitAt(e);
+  if(!hit) return;
+  if(hit.object.userData.workId) goToWork(hit.object.userData.workId);
+  else if(hit.object.userData.spot && !readOnly) openForm(null, hit.object.userData.spot);
+}
+
+/* ---------- info panel ---------- */
+function renderInfo(){
+  const box = $('info'); box.replaceChildren();
+  const s = selectedId && layout && layout.byId[selectedId];
+  if(!s || moveMode){ box.hidden = true; return; }
+  const w = s.work;
+  const x = el('button', 'x', '×'); x.setAttribute('aria-label', '닫기'); x.onclick = () => { selectedId = null; renderInfo(); markSelected(); };
+  box.append(x, el('div', 'no', `CAT. ${String(s.no).padStart(2, '0')} · ${s.face.name}`), el('h3', null, w.title || '제목 없음'));
+  box.append(el('p', 'meta', [w.artist, w.year].filter(Boolean).join(', ')));
+  const m2 = [w.period, w.medium, w.place].filter(Boolean).join(' · '); if(m2) box.append(el('p', 'meta', m2));
+  if(w.note) box.append(el('p', 'note', w.note));
+  if(w.curator) box.append(el('p', 'curator', '큐레이터 · ' + w.curator));
+  if(!readOnly){
+    const row = el('div', 'row');
+    const eb = el('button', 'btn', '수정'); eb.onclick = () => openForm(w);
+    const db_ = el('button', 'btn danger', '내리기');
+    db_.onclick = () => {
+      row.replaceChildren(el('span', 'meta', '이 작품을 전시에서 내릴까요?'));
+      const yes = el('button', 'btn danger solid', '내리기'), no = el('button', 'btn', '취소');
+      yes.onclick = () => removeWork(w.id); no.onclick = renderInfo; row.append(yes, no);
+    };
+    row.append(eb, db_); box.append(row);
+  }
+  box.hidden = false;
+}
+
+/* ---------- floor plan ---------- */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const plan = $('plan');
+let marker = null;
+function sv(tag, attrs, parent){ const n = document.createElementNS(SVGNS, tag); for(const k in attrs) n.setAttribute(k, attrs[k]); if(parent) parent.append(n); return n; }
+const gx = x => (x + layout.W/2)*PS, gy = z => (z + layout.D/2)*PS;
+function renderPlan(){
+  plan.replaceChildren(); marker = null;
+  const ex = curEx(); if(!ex || !layout) return;
+  const {W, D} = layout, Wp = W*PS, Dp = D*PS;
+  plan.setAttribute('viewBox', `-34 -30 ${Wp + 68} ${Dp + 78}`);
+  const grid = sv('path', {class:'grid', d:''}, plan); let d = '';
+  for(let x=2; x<W; x+=2) d += `M${x*PS} 0V${Dp}`;
+  for(let z=2; z<D; z+=2) d += `M0 ${z*PS}H${Wp}`;
+  grid.setAttribute('d', d);
+  sv('rect', {x:0, y:0, width:Wp, height:Dp, fill:floorOf(ex).hex, 'fill-opacity':.16}, plan);
+  sv('rect', {x:0, y:0, width:Wp, height:Dp, class:'wall'}, plan);
+  const ft = (t, x, y, anchor, rot) => { const n = sv('text', {x, y, class:'face-t', 'text-anchor':anchor || 'middle'}, plan); if(rot) n.setAttribute('transform', `rotate(${rot} ${x} ${y})`); n.textContent = t; };
+  ft('북쪽 벽', Wp/2, -8); ft('남쪽 벽 · 입구', Wp/2, Dp + 16);
+  ft('서쪽 벽', -12, Dp/2, 'middle', -90); ft('동쪽 벽', Wp + 12, Dp/2, 'middle', 90);
+  // intro panel
+  const k = layout.kiosk;
+  sv('rect', {x:gx(k.cx - KIOSK.w/2), y:gy(k.cz) - 2, width:KIOSK.w*PS, height:4, class:'kiosk'}, plan);
+  const kt = sv('text', {x:gx(k.cx), y:gy(k.cz) + 12, class:'face-t', 'text-anchor':'middle'}, plan); kt.textContent = '소개판';
+  // free walls; A face = local +y in this rotated frame
+  layout.pws.forEach(pw => {
+    const L = pw.len*PS;
+    const gw = sv('g', {class:'pwall' + (pw.id === selWallId ? ' sel' : ''), 'data-wall':pw.id,
+      transform:`translate(${gx(pw.cx)} ${gy(pw.cz)}) rotate(${pw.deg})`}, plan);
+    sv('rect', {x:-L/2-3, y:-10, width:L+6, height:20, rx:3, class:'hit'}, gw);
+    sv('rect', {x:-L/2, y:-1.6, width:L, height:3.2, class:'body'}, gw);
+    const lb = sv('text', {x:L/2 + 4, y:3, class:'pw-label'}, gw); lb.textContent = pw.label;
+    if(planEdit){
+      const a = sv('text', {x:0, y:7, class:'pw-side'}, gw); a.textContent = 'A';
+      const b = sv('text', {x:0, y:-7, class:'pw-side'}, gw); b.textContent = 'B';
+    }
+  });
+  // slots
+  layout.slots.forEach(s => {
+    const off = s.face.wall ? 1.1 : .9;
+    const cx = gx(s.x + s.nx*off), cy = gy(s.z + s.nz*off);
+    if(!s.work){ if(!planEdit && !moveMode) sv('circle', {cx, cy, r:3.5, class:'empty-slot'}, plan); return; }
+    const gd = sv('g', {class:'dot' + (s.work.id === (moveMode ? selWorkId : selectedId) ? ' sel' : '') + (moveMode && s.pinned ? ' pin' : ''),
+      'data-id':s.work.id, tabindex:0, role:'button'}, plan);
+    sv('circle', {cx, cy, r:7.5}, gd);
+    const tx = sv('text', {x:cx, y:cy}, gd); tx.textContent = s.no;
+    const tt = sv('title', {}, gd); tt.textContent = `${s.no}. ${s.work.title} — ${s.work.artist}`;
+  });
+  // dimensions + scale
+  const dy = Dp + 34;
+  sv('path', {class:'dim', d:`M0 ${dy}H${Wp}M0 ${dy-4}v8M${Wp} ${dy-4}v8`}, plan);
+  const t1 = sv('text', {x:Wp/2, y:dy + 12, class:'dim-t', 'text-anchor':'middle'}, plan); t1.textContent = `${W} m`;
+  const t2 = sv('text', {x:Wp + 26, y:Dp/2, class:'dim-t', 'text-anchor':'middle', transform:`rotate(90 ${Wp + 26} ${Dp/2})`}, plan); t2.textContent = `${D} m`;
+  sv('path', {class:'dim', d:`M0 ${dy+24}h${4*PS}M0 ${dy+20}v8M${2*PS} ${dy+21}v6M${4*PS} ${dy+20}v8`}, plan);
+  const t3 = sv('text', {x:4*PS + 6, y:dy + 27, class:'dim-t'}, plan); t3.textContent = '4 m';
+  marker = sv('g', {class:'me'}, plan);
+  sv('path', {d:'M0 0L-14 -30A32 32 0 0 1 14 -30Z'}, marker);
+  sv('circle', {r:5}, marker);
+  updateMarker();
+}
+function updateMarker(){
+  if(!marker || !layout) return;
+  marker.setAttribute('transform', `translate(${gx(pos.x)} ${gy(pos.z)}) rotate(${-yaw*180/Math.PI})`);
+}
+function markSelected(){ const id = moveMode ? selWorkId : selectedId; plan.querySelectorAll('.dot').forEach(d => d.classList.toggle('sel', d.dataset.id === id)); }
+function planPt(e){
+  const p = plan.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+  const q = p.matrixTransform(plan.getScreenCTM().inverse());
+  return {x: q.x/PS - layout.W/2, z: q.y/PS - layout.D/2};
+}
+plan.addEventListener('click', e => {
+  if(suppressClick){ suppressClick = false; return; }
+  if(!layout || moveMode) return;
+  const dot = e.target.closest('.dot');
+  if(dot){ goToWork(dot.dataset.id); return; }
+  if(planEdit){
+    if(!e.target.closest('.pwall') && selWallId){ selWallId = null; renderPlan(); syncWallCtl(); }
+    return;
+  }
+  const {x, z} = planPt(e);
+  if(!blocked(x, z)) goTo(x, z);
+});
+plan.addEventListener('keydown', e => { const d = e.target.closest('.dot'); if(d && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); goToWork(d.dataset.id); } });
+
+/* ---------- wall editing ---------- */
+plan.addEventListener('pointerdown', e => {
+  suppressClick = false;
+  if(moveMode && !readOnly && layout){
+    const dot = e.target.closest('.dot'); if(!dot) return;
+    e.preventDefault();
+    startWorkDrag(dot.dataset.id, 'plan', 0, 0);
+    plan.setPointerCapture(e.pointerId);
+    return;
+  }
+  if(!planEdit || readOnly || !layout) return;
+  const g = e.target.closest('.pwall'); if(!g) return;
+  const pw = layout.wallsById[g.dataset.wall]; if(!pw) return;
+  e.preventDefault();
+  selWallId = pw.id;
+  const p = planPt(e);
+  drag = {id:pw.id, ox:p.x - pw.cx, oz:p.z - pw.cz, moved:false};
+  plan.setPointerCapture(e.pointerId);
+  renderPlan(); syncWallCtl();
+});
+plan.addEventListener('pointermove', e => {
+  if(workDrag && workDrag.src === 'plan'){
+    const nf = nearestFace(planPt(e)); if(nf) applyWorkPos(workDrag.id, nf.face, nf.along, null);
+    return;
+  }
+  if(!drag) return;
+  const w = walls.find(w => w.id === drag.id); if(!w) return;
+  const p = planPt(e);
+  const snap = v => Math.round(v*4)/4;
+  w.x = snap(clamp(p.x - drag.ox, -layout.W/2 + .6, layout.W/2 - .6));
+  w.z = snap(clamp(p.z - drag.oz, -layout.D/2 + .6, layout.D/2 - .6));
+  drag.moved = true;
+  layout = computeLayout(); renderPlan();
+});
+async function endDrag(){
+  if(!drag) return;
+  const d = drag; drag = null;
+  if(d.moved){ suppressClick = true; await saveWall(d.id); }
+  if(pendingWalls){ walls = pendingWalls; pendingWalls = null; }
+  refresh();
+}
+plan.addEventListener('pointerup', () => { endDrag(); endWorkDrag('plan'); });
+plan.addEventListener('pointercancel', () => { endDrag(); endWorkDrag('plan'); });
+
+/* ---------- moving works ---------- */
+function startWorkDrag(id, src, da, dy){
+  const w = works.find(x => x.id === id), s = layout.byId[id]; if(!w || !s) return;
+  selWorkId = id;
+  workDrag = {id, src, da, dy, moved:false, aspect: s.dims ? s.dims.aspect : (w.aspect || .8)};
+  markSelected(); syncWorkCtl();
+}
+function applyWorkPos(id, face, along, y){
+  const w = works.find(x => x.id === id), d = workDrag; if(!w || !d) return;
+  const s0 = layout.byId[id];
+  const half = s0 && s0.dims ? Math.min(s0.dims.w/2 + .12, face.len/2) : .5;
+  w.spot = face.key; w.at = round2(clamp(along, -face.len/2 + half, face.len/2 - half));
+  if(y != null) w.y = y;
+  d.moved = true;
+  layout = computeLayout();
+  const s = layout.byId[id], grp = workGroups[id];
+  if(s){
+    const dims = workDims(s, d.aspect);
+    if(y != null) w.y = s.y = round2(dims.y);
+    if(grp){ grp.position.set(s.x, dims.y, s.z); grp.rotation.y = Math.atan2(s.nx, s.nz); }
+  }
+  renderPlan();
+}
+async function endWorkDrag(src){
+  const d = workDrag; if(!d || d.src !== src) return;
+  workDrag = null;
+  if(d.moved){
+    if(src === 'plan') suppressClick = true;
+    const w = works.find(x => x.id === d.id);
+    if(w) await saveWorkFields(d.id, {spot:w.spot, at:w.at, y: Number.isFinite(w.y) ? w.y : null});
+  } else if(src === 'plan') goToWork(d.id, false);
+  if(pendingWorks){ works = pendingWorks; pendingWorks = null; }
+  refresh();
+}
+async function saveWorkFields(id, fields){
+  const w = works.find(x => x.id === id); if(!w) return;
+  Object.assign(w, fields);
+  if(localMode) return;
+  try{ await db.doc(exPath('works', id)).update(fields); }
+  catch(err){ showStatus(err && err.code === 'invalid_argument' ? '작품을 옮길 권한이 없습니다. ‘이 전시 편집하기’에서 비밀번호를 다시 넣어 주세요.' : '작품 위치를 저장하지 못했습니다. 다시 옮겨 주세요.'); }
+}
+function syncWorkCtl(){
+  if(!moveMode) return;
+  const s = selWorkId && layout && layout.byId[selWorkId];
+  if(selWorkId && !s) selWorkId = null;
+  $('workCtl').hidden = !s;
+  if(!s){ $('workSelInfo').textContent = '3D 화면이나 도면에서 작품을 끌어 벽 위 원하는 곳에 걸어 보세요. 다른 벽으로도 옮겨지고, 조명도 함께 따라갑니다.'; return; }
+  const w = s.work, dims = s.dims || {y:1.65, h:1};
+  $('workSelInfo').textContent = `CAT. ${String(s.no).padStart(2, '0')} ${w.title || '제목 없음'} · ${s.face.name}${s.pinned ? '' : ' · 자동 배치'}`;
+  if(document.activeElement !== $('k-y')) $('k-y').value = dims.y;
+  $('k-yOut').textContent = dims.y.toFixed(2) + ' m';
+  if(document.activeElement !== $('k-sz')) $('k-sz').value = dims.h;
+  $('k-szOut').textContent = (Number.isFinite(w.sz) ? '' : '자동 ') + dims.h.toFixed(2) + ' m';
+  const lp = $('k-lamp'); lp.replaceChildren();
+  [[true, '조명 켜기'], [false, '조명 끄기']].forEach(([on, name]) => {
+    const b = el('button', 'style-btn txt', name); b.type = 'button'; b.setAttribute('aria-pressed', String((w.lamp !== false) === on));
+    b.onclick = async () => { await saveWorkFields(w.id, {lamp:on}); refresh(); }; lp.append(b);
+  });
+  $('k-auto').hidden = !(s.pinned || Number.isFinite(w.y) || Number.isFinite(w.sz));
+}
+function workInput(fields, done){
+  const w = works.find(x => x.id === selWorkId); if(!w) return;
+  Object.assign(w, fields);
+  layout = computeLayout(); scheduleRebuild();
+  if(fields.y != null) $('k-yOut').textContent = (+fields.y).toFixed(2) + ' m';
+  if(fields.sz != null) $('k-szOut').textContent = (+fields.sz).toFixed(2) + ' m';
+  if(done) saveWorkFields(w.id, fields).then(refresh);
+}
+$('k-y').addEventListener('input', e => workInput({y:+e.target.value}));
+$('k-y').addEventListener('change', e => workInput({y:+e.target.value}, true));
+$('k-sz').addEventListener('input', e => workInput({sz:+e.target.value}));
+$('k-sz').addEventListener('change', e => workInput({sz:+e.target.value}, true));
+$('k-auto').onclick = async () => { if(!selWorkId) return; await saveWorkFields(selWorkId, {at:null, y:null, sz:null}); refresh(); };
+function setMoveMode(on){
+  if(on && planEdit) setPlanEdit(false);
+  moveMode = on;
+  $('moveWorkBtn').textContent = on ? '작품 옮기기 마치기' : '작품 옮기기';
+  $('moveWorkBtn').classList.toggle('primary', on);
+  $('workBar').hidden = !on;
+  plan.classList.toggle('moving', on);
+  $('hint').textContent = on ? HINT_MOVE : HINT_WALK;
+  $('planHelp').textContent = on ? '점을 끌어서 다른 자리나 다른 벽으로 옮기세요. 금색 테두리는 직접 옮긴 작품입니다. 바꾼 내용은 모두에게 바로 보입니다.' : PLAN_HELP;
+  if(!on) selWorkId = null;
+  if(on){ selectedId = null; renderInfo(); }
+  renderPlan(); syncWorkCtl();
+}
+$('moveWorkBtn').onclick = () => setMoveMode(!moveMode);
+
+const exPath = (...p) => ['exhibitions', curId, ...p].join('/');
+async function saveWall(id){
+  const w = walls.find(w => w.id === id); if(!w || localMode) return;
+  const {id:_, ...data} = w;
+  try{ await db.doc(exPath('walls', id)).set(data); }
+  catch(err){ showStatus(err && err.code === 'invalid_argument' ? '벽을 옮길 권한이 없습니다. ‘이 전시 편집하기’에서 비밀번호를 다시 넣어 주세요.' : '벽 위치를 저장하지 못했습니다. 다시 옮겨 주세요.'); }
+}
+function syncWallCtl(){
+  const pw = selWallId && layout && layout.wallsById[selWallId];
+  if(selWallId && !pw) selWallId = null;
+  $('wallCtl').hidden = !pw;
+  if(!pw){ $('wallSelInfo').textContent = '+ 벽 세우기를 누르면 3D 화면에서 지금 바라보는 곳에 벽이 생깁니다. 벽을 누르면 고르고, 끌어서 옮길 수 있어요.'; return; }
+  const n = layout.slots.filter(s => s.face.wall === pw && s.work).length;
+  $('wallSelInfo').textContent = `${pw.label} · 작품 ${n}점`;
+  $('w-len').value = pw.len; $('w-lenOut').textContent = pw.len.toFixed(1) + ' m';
+  $('w-rot').value = pw.deg; $('w-rotOut').textContent = pw.deg + '°';
+  if(document.activeElement !== $('w-color')) $('w-color').value = pw.color || colorOf(curEx()?.wallColor).hex;
+  $('w-colorReset').hidden = !pw.color;
+  resetDel();
+}
+function resetDel(){
+  const wrap = $('w-delWrap'); wrap.replaceChildren();
+  const b = el('button', 'btn danger', '벽 철거'); b.type = 'button';
+  b.onclick = () => {
+    const pw = layout.wallsById[selWallId]; if(!pw) return;
+    const n = layout.slots.filter(s => s.face.wall === pw && s.work).length;
+    wrap.replaceChildren(el('span', 'meta', n ? `걸린 작품 ${n}점은 북쪽 벽으로 옮겨집니다. 철거할까요? ` : '이 벽을 철거할까요? '));
+    const yes = el('button', 'btn danger solid', '철거'), no = el('button', 'btn', '취소');
+    yes.type = no.type = 'button';
+    yes.onclick = () => removeWall(pw.id); no.onclick = resetDel;
+    wrap.append(yes, ' ', no);
+  };
+  wrap.append(b);
+}
+async function removeWall(id){
+  try{
+    if(!localMode) await db.doc(exPath('walls', id)).delete();
+    walls = walls.filter(w => w.id !== id);
+    if(localMode) local.walls[curId] = walls;
+    selWallId = null; refresh();
+  }catch(_){ showStatus('벽을 철거하지 못했습니다.'); }
+}
+function wallInput(field, val, done){
+  const w = walls.find(w => w.id === selWallId); if(!w) return;
+  w[field] = val;
+  layout = computeLayout(); renderPlan(); syncWallCtl();
+  if(field === 'color') scheduleRebuild();
+  if(done){ saveWall(w.id); refresh(); }
+}
+$('w-color').addEventListener('input', e => wallInput('color', e.target.value));
+$('w-color').addEventListener('change', e => wallInput('color', e.target.value, true));
+$('w-colorReset').onclick = () => wallInput('color', null, true);
+
+/* ---------- colour decorating (whole hall) ---------- */
+function setDeco(fields, save, lightOnly){
+  const ex = curEx(); if(!ex) return;
+  Object.assign(ex, fields);
+  curSig = JSON.stringify(ex);   // our own echo from the store should not trigger a second rebuild
+  if(lightOnly) applyAmbient(); else { scheduleRebuild(); renderPlan(); }
+  renderDeco();
+  if(save && !localMode){
+    db.doc('exhibitions/' + ex.id).update(fields).catch(err => showStatus(err && err.code === 'invalid_argument'
+      ? '색을 바꿀 권한이 없습니다. ‘이 전시 편집하기’에서 비밀번호를 다시 넣어 주세요.' : '색을 저장하지 못했습니다. 다시 골라 주세요.'));
+  }
+  if(save) renderIntro();
+  persist();
+}
+function swatchBtn(hex, name, pressed, onPick){
+  const b = el('button', 'swatch-btn'); b.type = 'button';
+  b.style.background = hex; b.title = name; b.setAttribute('aria-label', name);
+  b.setAttribute('aria-pressed', String(pressed)); b.onclick = onPick; return b;
+}
+function renderDeco(){
+  const ex = curEx(); if(!ex || $('decoBar').hidden) return;
+  const wc = colorOf(ex.wallColor).hex, fl = floorOf(ex);
+  const wp = $('d-wallPresets'); wp.replaceChildren();
+  COLORS.forEach(c => wp.append(swatchBtn(c.hex, c.name, c.hex === wc, () => setDeco({wallColor:c.hex}, true))));
+  if(document.activeElement !== $('d-wall')) $('d-wall').value = wc;
+  const fs = $('d-floorStyles'); fs.replaceChildren();
+  FLOOR_STYLES.forEach(s => {
+    const b = el('button', 'style-btn'); b.type = 'button'; b.setAttribute('aria-pressed', String(s.id === fl.style));
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    const g = cv.getContext('2d'); g.save(); g.scale(64/512*2, 64/512*2); drawFloor(g, 512, 512, s.id, fl.hex); g.restore();
+    b.append(cv, document.createTextNode(s.name));
+    b.onclick = () => setDeco({floorStyle:s.id}, true);
+    fs.append(b);
+  });
+  const fp = $('d-floorPresets'); fp.replaceChildren();
+  FLOOR_COLORS.forEach(c => fp.append(swatchBtn(c.hex, c.name, c.hex === fl.hex, () => setDeco({floorColor:c.hex}, true))));
+  if(document.activeElement !== $('d-floor')) $('d-floor').value = fl.hex;
+  const lt = lightOf(ex);
+  const ls = $('d-lstyle'); ls.replaceChildren();
+  [['lamp', '액자 위 조명'], ['ceiling', '천장 스포트라이트']].forEach(([id, name]) => {
+    const b = el('button', 'style-btn txt', name); b.type = 'button'; b.setAttribute('aria-pressed', String(lt.style === id));
+    b.onclick = () => setDeco({lightStyle:id}, true); ls.append(b);
+  });
+  const sp = $('d-spot'); sp.replaceChildren();
+  [[true, '켜기'], [false, '끄기']].forEach(([on, name]) => {
+    const b = el('button', 'style-btn txt', name); b.type = 'button'; b.setAttribute('aria-pressed', String(lt.spots === on));
+    b.onclick = () => setDeco({spotlights:on}, true); sp.append(b);
+  });
+  const tn = $('d-tone'); tn.replaceChildren();
+  TONES.forEach(t => {
+    const b = el('button', 'style-btn txt'); b.type = 'button'; b.setAttribute('aria-pressed', String(lt.tone.id === t.id));
+    const dot = el('span', 'tone'); dot.style.background = t.css; b.append(dot, document.createTextNode(t.name));
+    b.onclick = () => setDeco({lightTone:t.id}, true); tn.append(b);
+  });
+  if(document.activeElement !== $('d-ambient')) $('d-ambient').value = lt.ambient;
+  $('d-ambientOut').textContent = Math.round(lt.ambient*100) + '%';
+}
+$('d-ambient').addEventListener('input', e => setDeco({ambient:+e.target.value}, false, true));
+$('d-ambient').addEventListener('change', e => setDeco({ambient:+e.target.value}, true, true));
+$('d-wall').addEventListener('input', e => setDeco({wallColor:e.target.value}));
+$('d-wall').addEventListener('change', e => setDeco({wallColor:e.target.value}, true));
+$('d-floor').addEventListener('input', e => setDeco({floorColor:e.target.value}));
+$('d-floor').addEventListener('change', e => setDeco({floorColor:e.target.value}, true));
+$('decoBtn').onclick = () => {
+  const open = $('decoBar').hidden;
+  $('decoBar').hidden = !open;
+  $('decoBtn').classList.toggle('primary', open);
+  $('decoBtn').textContent = open ? '꾸미기 마치기' : '색·조명 꾸미기';
+  renderDeco();
+};
+$('w-len').addEventListener('input', e => wallInput('len', +e.target.value));
+$('w-len').addEventListener('change', e => wallInput('len', +e.target.value, true));
+$('w-rot').addEventListener('input', e => wallInput('rot', +e.target.value));
+$('w-rot').addEventListener('change', e => wallInput('rot', +e.target.value, true));
+function setPlanEdit(on){
+  if(on && moveMode) setMoveMode(false);
+  planEdit = on;
+  $('editPlanBtn').textContent = on ? '벽 세우기 마치기' : '벽 세우기';
+  $('editPlanBtn').classList.toggle('primary', on);
+  $('wallBar').hidden = !on;
+  plan.classList.toggle('editing', on);
+  $('planHelp').textContent = on
+    ? '벽을 끌어서 옮기고 길이와 방향을 바꿔 보세요. 0.25 m 단위로 맞춰집니다. A·B는 벽의 두 면입니다. 바꾼 내용은 모두에게 바로 보입니다.'
+    : '점을 누르면 그 작품 앞으로, 빈 곳을 누르면 그 자리로 이동합니다. 눈금 한 칸은 2 m.';
+  if(!on) selWallId = null;
+  renderPlan(); syncWallCtl();
+}
+$('editPlanBtn').onclick = () => setPlanEdit(!planEdit);
+$('addWallBtn').onclick = async () => {
+  if(layout.pws.length >= MAX_WALLS){ showStatus(`한 전시장에는 벽을 ${MAX_WALLS}개까지 세울 수 있습니다.`); return; }
+  const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+  const x = Math.round(clamp(pos.x + fx*3, -layout.W/2 + 1, layout.W/2 - 1)*4)/4;
+  const z = Math.round(clamp(pos.z + fz*3, -layout.D/2 + 1, layout.D/2 - 1)*4)/4;
+  const rot = normDeg(Math.round(-yaw*180/Math.PI/15)*15);   // A face turned toward the visitor
+  const data = {x, z, len:4, rot, createdAt:Date.now(), owner:myId};
+  try{
+    let id;
+    if(localMode){ id = 'lw' + Date.now(); walls.push({id, ...data}); }
+    else {
+      const ref = db.collection(exPath('walls')).doc(); id = ref.id;
+      await ref.set(data);
+      if(!walls.some(w => w.id === id)) walls.push({id, ...data});
+    }
+    selWallId = id; refresh();
+  }catch(err){ showStatus(err && err.code === 'invalid_argument' ? '벽을 세울 권한이 없습니다. ‘이 전시 편집하기’에서 비밀번호를 다시 넣어 주세요.' : '벽을 세우지 못했습니다. 다시 눌러 주세요.'); }
+};
+
+/* ---------- catalogue ---------- */
+function renderCatalog(){
+  const root = $('catalog'); root.replaceChildren();
+  const filled = layout.slots.filter(s => s.work);
+  $('countLine').textContent = filled.length ? `작품 ${filled.length}점 · 번호는 북쪽 벽부터 시계 방향, 그다음 세운 벽 순서` : '아직 걸린 작품이 없습니다.';
+  filled.forEach(s => {
+    const w = s.work, c = el('button', 'card');
+    const th = el('div', 'thumb'); const src = safeImg(w.image);
+    if(src){ const im = new Image(); im.src = src; im.alt = w.title || ''; im.loading = 'lazy'; th.append(im); }
+    c.append(th, el('span', 'no', `CAT. ${String(s.no).padStart(2, '0')} · ${s.face.name}`), el('span', 't', w.title || '제목 없음'),
+      el('span', 'a', [w.artist, w.year].filter(Boolean).join(', ')));
+    if(w.curator) c.append(el('span', 'a', '큐레이터 · ' + w.curator));
+    c.onclick = () => { setTab('hall'); goToWork(w.id); vp.scrollIntoView({behavior:'smooth', block:'center'}); };
+    root.append(c);
+  });
+  if(!readOnly){ const add = el('button', 'add-here', '+ 작품 올리기'); add.onclick = () => openForm(null); root.append(add); }
+}
+
+/* ---------- intro page ---------- */
+function renderExHead(){
+  const ex = curEx();
+  $('exGroup').textContent = ex ? `${ex.group || ''} 기획전` : '';
+  if(sbMode) renderGate();
+  $('exTitle').textContent = ex ? (ex.title || '제목 없는 전시') : (exReady ? '이 전시를 찾을 수 없습니다' : '불러오는 중…');
+  $('exTheme').textContent = ex ? (ex.theme || '') : (exReady ? '삭제되었거나 주소가 바뀌었습니다. 전시 목록으로 돌아가 주세요.' : '');
+  document.querySelector('.tabs').hidden = !ex;
+  ['intro', 'hall', 'catalog'].forEach(t => { if(!ex) $('tab-' + t).hidden = true; });
+  if(ex) setTab(tab, true);
+  $('hudTitle').textContent = ex ? ex.title : '';
+}
+function renderIntro(){
+  const ex = curEx(); if(!ex) return;
+  const it = $('introIntent');
+  it.textContent = ex.intent || '아직 주제 의도를 적지 않았습니다. 왜 이 주제를 골랐는지, 관람객에게 무엇을 보여 주고 싶은지 적어 보세요.';
+  it.classList.toggle('empty', !ex.intent);
+  const acts = $('introActions'); acts.replaceChildren();
+  if(!readOnly){ const b = el('button', 'btn', '소개 고쳐 쓰기'); b.onclick = () => openExForm(ex); acts.append(b); }
+  const go = el('button', 'btn primary', '전시장 둘러보기 →'); go.onclick = () => setTab('hall'); acts.append(go);
+  const sz = SIZES[ex.size] || SIZES.m, col = colorOf(ex.wallColor);
+  const dl = $('introFacts'); dl.replaceChildren();
+  const add = (k, v) => { dl.append(el('dt', null, k)); const dd = el('dd'); if(v instanceof Node) dd.append(v); else dd.textContent = v; dl.append(dd); };
+  add('모둠', ex.group || '—');
+  add('참여 학생', ex.members || '—');
+  add('전시장', `${sz.W} × ${sz.D} m`);
+  const cs = el('span'); const dot = el('span', 'sw-dot'); dot.style.background = col.hex; cs.append(dot, col.name); add('벽 색', cs);
+  const fl = floorOf(ex), fs = el('span'), fdot = el('span', 'sw-dot'); fdot.style.background = fl.hex;
+  fs.append(fdot, FLOOR_STYLES.find(s => s.id === fl.style).name + ' · ' + (FLOOR_COLORS.find(c => c.hex === fl.hex)?.name || fl.hex));
+  add('바닥', fs);
+  const lt = lightOf(ex);
+  add('조명', lt.spots ? `작품마다 ${lt.style === 'lamp' ? '액자 위 조명' : '천장 스포트라이트'} · ${lt.tone.name}` : '작품 조명 꺼짐');
+  add('세운 벽', `${walls.length}개`);
+  add('작품', `${works.length}점`);
+  const dz = $('introDanger'); dz.replaceChildren();
+  if(canManage(ex)){
+    const b = el('button', 'btn danger', '전시 삭제');
+    b.onclick = () => {
+      dz.replaceChildren(el('span', 'meta', `작품 ${works.length}점과 벽까지 모두 지워집니다. 되돌릴 수 없어요.`));
+      const yes = el('button', 'btn danger solid', '삭제'), no = el('button', 'btn', '취소');
+      yes.onclick = deleteEx; no.onclick = renderIntro; dz.append(yes, no);
+    };
+    dz.append(b);
+  }
+}
+function setTab(t, quiet){
+  tab = t;
+  document.querySelectorAll('.tabs [role=tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  ['intro', 'hall', 'catalog'].forEach(k => $('tab-' + k).hidden = k !== t);
+  if(t === 'hall'){ resize(); loop.last = performance.now(); }
+  else if(!quiet){ if(planEdit) setPlanEdit(false); if(moveMode) setMoveMode(false); }
+}
+document.querySelectorAll('.tabs [role=tab]').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+
+/* ---------- lobby ---------- */
+function renderLobby(){
+  persist();
+  const grid = $('exGrid'); grid.replaceChildren();
+  const list = exList.slice().sort((a,b) => (a.createdAt||0)-(b.createdAt||0));
+  $('exCount').textContent = !exReady ? '전시를 불러오는 중입니다.' : list.length ? `전시 ${list.length}개` : '아직 전시가 없습니다. ‘새 전시 만들기’로 내 전시를 시작하세요.';
+  list.forEach(ex => {
+    const col = colorOf(ex.wallColor), sz = SIZES[ex.size] || SIZES.m;
+    const c = el('button', 'ex-card');
+    const band = el('div', 'band'); band.style.background = col.hex; band.style.color = isLight(col.hex) ? '#1c2220' : '#f4f2ec';
+    band.append(el('span', 'g', `${ex.group || ''} 기획전`), el('h3', null, ex.title || '제목 없는 전시'));
+    const body = el('div', 'body');
+    body.append(el('span', 'theme', ex.theme || ''), el('span', 'facts', `${sz.W} × ${sz.D} m${ex.members ? ' · ' + ex.members : ''}`));
+    c.append(band, body);
+    c.onclick = () => { location.hash = 'ex-' + ex.id; };
+    grid.append(c);
+  });
+  if(!readOnly && exReady){
+    const n = el('button', 'ex-new'); const inner = el('div');
+    inner.append(el('b', null, '+ 새 전시 만들기'), el('span', null, '전시명, 주제, 주제 의도를 쓰고 빈 전시장을 받습니다.'));
+    n.append(inner); n.onclick = () => openExForm(null); grid.append(n);
+  }
+}
+
+/* ---------- routing ---------- */
+function route(){
+  const m = location.hash.match(/^#ex-([A-Za-z0-9_.~-]+)$/);
+  if(m) openEx(m[1]); else showLobby();
+  window.scrollTo(0, 0);
+}
+function showLobby(){
+  if(curId){ unsubs.forEach(u => u()); unsubs = []; curId = null; works = []; walls = []; layout = null; buildGallery(); }
+  if(planEdit) setPlanEdit(false);
+  if(moveMode) setMoveMode(false);
+  $('exView').hidden = true; $('lobby').hidden = false; $('info').hidden = true;
+  updateEditUI();
+  renderLobby();
+}
+function openEx(id){
+  $('lobby').hidden = true; $('exView').hidden = false;
+  if(curId !== id){
+    unsubs.forEach(u => u()); unsubs = [];
+    curId = id; curSig = ''; selectedId = null; selWallId = null; tab = 'intro';
+    if(planEdit) setPlanEdit(false);
+    if(moveMode) setMoveMode(false);
+    if(localMode){
+      works = local.works[id] || (local.works[id] = []);
+      walls = local.walls[id] || (local.walls[id] = []);
+    } else {
+      works = []; walls = [];
+      const base = db.collection('exhibitions').doc(id);
+      unsubs.push(base.collection('works').onSnapshot(snap => {
+        const next = snap.docs.map(d => ({id:d.id, ...d.data()}));
+        if(workDrag) pendingWorks = next; else { works = next; refresh(); }
+      }, () => showStatus('작품 목록을 불러오지 못했습니다. 페이지를 새로 열어 주세요.')));
+      unsubs.push(base.collection('walls').onSnapshot(snap => {
+        const next = snap.docs.map(d => ({id:d.id, ...d.data()}));
+        if(drag) pendingWalls = next; else { walls = next; refresh(); }
+      }, () => {}));
+    }
+    layout = curEx() ? computeLayout() : null;
+    if(layout){ pos.x = layout.spawn.x; pos.z = layout.spawn.z; yaw = 0; pitch = 0; tween = null; }
+  }
+  updateEditUI();
+  renderExHead(); refresh();
+}
+window.addEventListener('hashchange', route);
+
+function refresh(){
+  persist();
+  const ex = curEx();
+  if(!curId || !ex){ renderExHead(); return; }
+  const firstLayout = !layout;
+  layout = computeLayout();
+  if(firstLayout){ pos.x = layout.spawn.x; pos.z = layout.spawn.z; yaw = 0; }
+  if(Math.abs(pos.x) > layout.W/2 || Math.abs(pos.z) > layout.D/2){ pos.x = layout.spawn.x; pos.z = layout.spawn.z; }
+  if(selectedId && !layout.byId[selectedId]) selectedId = null;
+  buildGallery(); renderPlan(); renderCatalog(); renderInfo(); syncWallCtl(); syncWorkCtl(); renderIntro(); renderDeco();
+}
+
+/* ---------- exhibition form ---------- */
+(function buildChoices(){
+  const sz = $('x-sizes');
+  Object.entries(SIZES).forEach(([k, v]) => {
+    const l = el('label', 'choice'); const i = el('input'); i.type = 'radio'; i.name = 'x-size'; i.value = k; i.id = 'x-size-' + k;
+    l.append(i, document.createTextNode(`${v.name} · ${v.note}`)); sz.append(l);
+  });
+})();
+function openExForm(ex){
+  editingEx = !!ex;
+  $('exFormTitle').textContent = ex ? '전시 소개 고쳐 쓰기' : '새 전시 만들기';
+  $('exSave').textContent = ex ? '저장' : '만들기';
+  $('x-title').value = ex?.title || ''; $('x-group').value = ex?.group || ''; $('x-members').value = ex?.members || '';
+  $('x-theme').value = ex?.theme || ''; $('x-intent').value = ex?.intent || '';
+  ($('x-size-' + (ex?.size || 'm')) || $('x-size-m')).checked = true;
+  $('x-pinWrap').hidden = !sbMode || !!ex; $('x-pin').value = ''; $('x-pin2').value = '';
+  $('exFormErr').hidden = true;
+  $('exModal').hidden = false; $('x-title').focus();
+}
+$('newExBtn').onclick = () => openExForm(null);
+$('exCancel').onclick = () => $('exModal').hidden = true;
+$('exModal').addEventListener('click', e => { if(e.target.id === 'exModal') $('exModal').hidden = true; });
+$('exForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const title = $('x-title').value.trim(), group = $('x-group').value.trim(), theme = $('x-theme').value.trim();
+  const err = m => { const p = $('exFormErr'); p.textContent = m; p.hidden = false; };
+  if(!title || !group || !theme){ err('전시명, 이름(모둠), 주제를 적어 주세요.'); return; }
+  const prev = editingEx ? curEx() : null;
+  const newPin = $('x-pin').value;
+  if(sbMode && !prev){
+    if(newPin.length < 4){ err('편집 비밀번호를 4자 이상 적어 주세요.'); return; }
+    if(newPin !== $('x-pin2').value){ err('비밀번호 확인이 맞지 않습니다.'); return; }
+  }
+  const now = Date.now();
+  const data = {
+    title:str(title, 60), group:str(group, 30), members:str($('x-members').value.trim(), 120),
+    theme:str(theme, 120), intent:str($('x-intent').value.trim(), 2500),
+    size:(document.querySelector('input[name=x-size]:checked') || {}).value || 'm',
+    wallColor: prev?.wallColor || '#e9e7e2',
+    floorStyle: prev?.floorStyle || 'wood', floorColor: prev?.floorColor || '#8a6446',
+    spotlights: prev ? prev.spotlights !== false : true, ambient: prev?.ambient ?? .6, lightTone: prev?.lightTone || 'warm', lightStyle: prev?.lightStyle || 'lamp',
+    owner: prev ? (prev.owner || null) : myId, createdAt: prev ? (prev.createdAt || now) : now, updatedAt: now,
+  };
+  const btn = $('exSave'); btn.disabled = true;
+  try{
+    let id = prev ? prev.id : null;
+    if(localMode){
+      if(prev) Object.assign(prev, data);
+      else { id = 'lx' + now; exList.push({id, ...data}); }
+    } else {
+      const ref = prev ? db.doc('exhibitions/' + prev.id) : db.collection('exhibitions').doc();
+      id = ref.id;
+      if(sbMode && !prev){ creds.pins[id] = newPin; saveCreds(); }
+      try{ await ref.set(data); }
+      catch(e3){ if(sbMode && !prev){ delete creds.pins[id]; saveCreds(); } throw e3; }
+      if(!exList.some(x => x.id === id)) exList.push({id, ...data});
+    }
+    $('exModal').hidden = true;
+    if(prev){ curSig = ''; renderExHead(); refresh(); }
+    else location.hash = 'ex-' + id;
+  }catch(e2){
+    err(e2 && e2.code === 'invalid_argument' ? (sbMode ? '저장할 권한이 없습니다. 편집 비밀번호를 다시 확인해 주세요.' : '전시를 만들 권한이 없습니다. ‘이 전시 편집하기’에서 비밀번호를 다시 넣어 주세요.') : '저장하지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.');
+  }finally{ btn.disabled = false; }
+});
+async function deleteEx(){
+  const id = curId;
+  try{
+    if(!localMode){
+      for(const w of works) await db.doc(exPath('works', w.id)).delete();
+      for(const w of walls) await db.doc(exPath('walls', w.id)).delete();
+      await db.doc('exhibitions/' + id).delete();
+      if(sbMode){ delete creds.pins[id]; saveCreds(); }
+    }
+    exList = exList.filter(x => x.id !== id);
+    location.hash = '';
+  }catch(_){ showStatus('전시를 삭제하지 못했습니다. 잠시 뒤 다시 시도해 주세요.'); }
+}
+
+/* ---------- work form ---------- */
+function fillSpots(val){
+  const s = $('f-spot'); s.replaceChildren();
+  layout.faces.forEach(f => {
+    const o = document.createElement('option'); o.value = f.key;
+    o.textContent = f.wall ? f.name : `${f.name} (${f.hint})`; s.append(o);
+  });
+  s.value = val && layout.faceByKey[val] ? val : 'N';
+}
+function openForm(w, spot){
+  if(!layout) return;
+  editingId = w ? w.id : null; pendingImage = null;
+  const s = w && layout.byId[w.id];
+  $('formTitle').textContent = w ? '작품 정보 수정' : '작품 올리기';
+  $('saveBtn').textContent = w ? '저장' : '전시하기';
+  $('f-title').value = w?.title || ''; $('f-artist').value = w?.artist || ''; $('f-year').value = w?.year || '';
+  $('f-period').value = w?.period || ''; $('f-order').value = w?.order ?? '';
+  fillSpots(s ? s.face.key : spot);
+  $('f-medium').value = w?.medium || ''; $('f-place').value = w?.place || ''; $('f-note').value = w?.note || '';
+  $('f-curator').value = w?.curator || (() => { try{ return localStorage.getItem('curatorName') || ''; }catch(e){ return ''; } })();
+  const src = w && safeImg(w.image);
+  $('dropImg').hidden = !src; $('dropPh').hidden = !!src; if(src) $('dropImg').src = src;
+  $('formErr').hidden = true; $('f-image').value = '';
+  $('modal').hidden = false; $('f-title').focus();
+}
+function closeForm(){ $('modal').hidden = true; editingId = null; pendingImage = null; }
+$('addWorkBtn2').onclick = () => openForm(null);
+$('cancelBtn').onclick = closeForm;
+$('modal').addEventListener('click', e => { if(e.target.id === 'modal') closeForm(); });
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  if(!$('modal').hidden) closeForm();
+  if(!$('exModal').hidden) $('exModal').hidden = true;
+});
+const drop = $('drop');
+drop.onclick = () => $('f-image').click();
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); const f = e.dataTransfer.files[0]; if(f) takeFile(f); });
+$('f-image').addEventListener('change', e => { const f = e.target.files[0]; if(f) takeFile(f); });
+async function takeFile(f){
+  if(!/^image\//.test(f.type)){ formErr('이미지 파일만 올릴 수 있습니다.'); return; }
+  try{
+    pendingImage = await compress(f);
+    $('dropImg').src = pendingImage.dataUrl; $('dropImg').hidden = false; $('dropPh').hidden = true; $('formErr').hidden = true;
+  }catch(e){ formErr('이미지를 읽지 못했습니다. 다른 파일로 시도해 주세요.'); }
+}
+function compress(file){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      let max = 1280, q = .85, out, w, h;
+      for(let t=0; t<10; t++){
+        const sc = Math.min(1, max/Math.max(img.naturalWidth, img.naturalHeight));
+        w = Math.max(1, Math.round(img.naturalWidth*sc)); h = Math.max(1, Math.round(img.naturalHeight*sc));
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+        out = c.toDataURL('image/jpeg', q);
+        if(out.length < 190000) break;
+        if(q > .62) q -= .08; else max = Math.round(max*.8);
+      }
+      URL.revokeObjectURL(url); res({dataUrl:out, aspect:w/h});
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(); };
+    img.src = url;
+  });
+}
+function formErr(m){ const p = $('formErr'); p.textContent = m; p.hidden = false; }
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const title = $('f-title').value.trim(), artist = $('f-artist').value.trim();
+  const existing = editingId ? works.find(w => w.id === editingId) : null;
+  if(!title || !artist){ formErr('작품명과 작가를 적어 주세요.'); return; }
+  if(!pendingImage && !existing){ formErr('작품 이미지를 골라 주세요.'); return; }
+  const curator = $('f-curator').value.trim();
+  try{ localStorage.setItem('curatorName', curator); }catch(_){}
+  const now = Date.now(), ord = $('f-order').value.trim();
+  // keep where it was dragged, its size and its light; a different wall in the form puts it back in auto order there
+  const sameFace = existing && layout.byId[existing.id] && layout.byId[existing.id].face.key === $('f-spot').value;
+  const keep = {
+    at: sameFace && typeof existing.at === 'number' ? existing.at : null,
+    y: existing && Number.isFinite(existing.y) ? existing.y : null,
+    sz: existing && Number.isFinite(existing.sz) ? existing.sz : null,
+    lamp: existing ? existing.lamp !== false : true,
+  };
+  const data = {
+    ...keep,
+    title:str(title, 80), artist:str(artist, 60), year:str($('f-year').value.trim(), 30), period:str($('f-period').value.trim(), 40),
+    spot:$('f-spot').value, order: ord === '' ? null : clamp(Math.round(+ord) || 1, 1, 99),
+    medium:str($('f-medium').value.trim(), 60), place:str($('f-place').value.trim(), 60),
+    note:str($('f-note').value.trim(), 1200), curator:str(curator, 40),
+    image: pendingImage ? pendingImage.dataUrl : existing.image,
+    aspect: pendingImage ? pendingImage.aspect : (existing.aspect || .8),
+    owner: existing ? (existing.owner || null) : myId,
+    createdAt: existing ? (existing.createdAt || now) : now, updatedAt: now,
+  };
+  const btn = $('saveBtn'); btn.disabled = true; btn.textContent = '올리는 중…';
+  try{
+    let id = editingId;
+    if(localMode){
+      if(id){ const i = works.findIndex(w => w.id === id); works[i] = {id, ...data}; }
+      else { id = 'local' + now; works.push({id, ...data}); }
+      refresh();
+    } else {
+      const ref = id ? db.doc(exPath('works', id)) : db.collection(exPath('works')).doc();
+      id = ref.id; await ref.set(data);
+    }
+    closeForm(); setTab('hall'); setTimeout(() => goToWork(id), 150);
+  }catch(err){
+    const c = err && err.code;
+    if(c === 'invalid_argument') formErr('작품을 올릴 권한이 없거나 이미지가 너무 큽니다. 선생님께 편집 권한을 요청하거나 더 작은 이미지로 시도해 주세요.');
+    else if(c === 'quota_exceeded') formErr('저장 공간이 가득 찼습니다. 선생님께 알려 주세요.');
+    else formErr('잠시 연결이 불안정합니다. 다시 눌러 주세요.');
+  }finally{ btn.disabled = false; btn.textContent = editingId ? '저장' : '전시하기'; }
+});
+async function removeWork(id){
+  try{
+    if(localMode){ const i = works.findIndex(w => w.id === id); if(i >= 0) works.splice(i, 1); refresh(); }
+    else await db.doc(exPath('works', id)).delete();
+    selectedId = null; renderInfo();
+  }catch(e){ showStatus('작품을 내리지 못했습니다.'); }
+}
+
+/* ---------- hall title (teacher) ---------- */
+function applyHallTitle(t, s){ if(t) $('hallTitle').textContent = t; if(s) $('hallSub').textContent = s; }
+$('editTitleBtn').onclick = () => {
+  $('t-title').value = $('hallTitle').textContent; $('t-sub').value = $('hallSub').textContent;
+  $('titleForm').hidden = false; $('brand').hidden = true; $('editTitleBtn').hidden = true;
+};
+$('t-cancel').onclick = () => { $('titleForm').hidden = true; $('brand').hidden = false; $('editTitleBtn').hidden = sbMode && !isAdmin; };
+$('titleForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const t = $('t-title').value.trim(), s = $('t-sub').value.trim();
+  try{ if(db) await db.doc('settings/exhibition').set({title:str(t, 60), subtitle:str(s, 140)}); applyHallTitle(t, s); persistNow(); }
+  catch(_){ showStatus('이름을 저장하지 못했습니다.'); }
+  $('t-cancel').click();
+});
+
+/* ---------- boot ---------- */
+async function boot(){
+  initThree();
+  renderLobby();
+  const fontsReady = document.fonts ? document.fonts.ready.catch(() => {}) : Promise.resolve();
+  db = sbOn ? sbDb : null;
+  await Promise.race([fontsReady, new Promise(r => setTimeout(r, 1500))]);
+  if(db){
+    sbMode = true;
+    if(creds.admin){
+      try{ isAdmin = canEditAll = (await sbRpc('check_access', {p_ex:'', p_pin:creds.admin})) === 'admin'; }catch(_){}
+      if(!isAdmin){ creds.admin = null; saveCreds(); }
+    }
+    updateEditUI();
+  }
+  if(!db){
+    showStatus('아직 Supabase 주소와 키가 들어 있지 않아, 만든 전시가 이 기기에만 저장됩니다.');
+    localMode = true; exReady = true;
+    $('saveBar').hidden = false;
+    downloadsCap = window.claude && window.claude.use ? await window.claude.use('downloads').catch(() => null) : null;
+    await loadStore();
+    $('editTitleBtn').hidden = false;
+    route(); return;
+  }
+  const userCap = null;
+  if(userCap){
+    try{ myId = await userCap.id(); }catch(_){}
+    try{ canEditAll = await userCap.canEdit(); }catch(_){}
+    let w = null; try{ w = await userCap.can('data.write'); }catch(_){}
+    if(w === false){
+      readOnly = true;
+      ['newExBtn', 'addWorkBtn2', 'editPlanBtn', 'decoBtn', 'moveWorkBtn'].forEach(id => $(id).hidden = true);
+      showStatus('보기 전용으로 열려 있습니다. 전시를 만들거나 작품을 올리려면 ‘이 전시 편집하기’에서 비밀번호를 다시 넣어 주세요.');
+    }
+    if(canEditAll) $('editTitleBtn').hidden = false;
+  }
+  db.doc('settings/exhibition').onSnapshot(s => { if(s.exists){ const d = s.data(); applyHallTitle(str(d.title, 60), str(d.subtitle, 140)); } }, () => {});
+  db.collection('exhibitions').onSnapshot(snap => {
+    exList = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    exReady = true;
+    if(!$('lobby').hidden) renderLobby();
+    if(curId){
+      const sig = JSON.stringify(curEx() || null);
+      if(sig !== curSig){ curSig = sig; renderExHead(); refresh(); }
+    }
+  }, err => {
+    showStatus('전시 목록을 불러오지 못했습니다. 인터넷 연결을 확인하고 페이지를 새로 열어 주세요. 계속 안 되면 선생님께 알려 주세요(Supabase 프로젝트가 일시 중지되었을 수 있어요).');
+  });
+  route();
+}
+$('adminBtn').onclick = () => {
+  if(isAdmin){ isAdmin = false; canEditAll = false; creds.admin = null; saveCreds(); updateEditUI(); if(curId) refresh(); else renderLobby(); return; }
+  $('adminForm').hidden = false; $('adminErr').hidden = true; $('adminCode').value = ''; $('adminCode').focus();
+};
+$('adminCancel').onclick = () => { $('adminForm').hidden = true; };
+$('adminForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const code = $('adminCode').value; if(!code) return;
+  try{
+    const r = await sbRpc('check_access', {p_ex:'', p_pin:code});
+    if(r !== 'admin'){ $('adminErr').textContent = '관리 코드가 맞지 않습니다.'; $('adminErr').hidden = false; return; }
+    creds.admin = code; isAdmin = canEditAll = true; saveCreds();
+    $('adminForm').hidden = true; updateEditUI(); renderLobby();
+  }catch(_){ $('adminErr').textContent = '확인하지 못했습니다. 인터넷 연결이나 Supabase 설정을 확인해 주세요.'; $('adminErr').hidden = false; }
+});
+$('saveNowBtn').onclick = () => persistNow(true);
+$('exportBtn').onclick = () => exportBackup();
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if(f) readImport(f); });
+boot();
+})();
+</script>
+
+</body>
+</html>
