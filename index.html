@@ -662,7 +662,7 @@ async function sbRpc(fn, args){
   catch(_){ const e = new Error('network'); e.code = 'unavailable'; throw e; }
   if(!r.ok){
     let m = ''; try{ m = (await r.json()).message || ''; }catch(_){}
-    const e = new Error(m); e.code = /denied|bad path/.test(m) ? 'invalid_argument' : /too large/.test(m) ? 'too_large' : 'unavailable'; throw e;
+    const e = new Error(m); e.code = /Could not find the function|does not exist/i.test(m) ? 'missing_fn' : /denied|bad path/.test(m) ? 'invalid_argument' : /too large/.test(m) ? 'too_large' : 'unavailable'; throw e;
   }
   const t = await r.text(); return t ? JSON.parse(t) : null;
 }
@@ -753,7 +753,39 @@ function renderGate(){
   const g = $('editGate'); g.replaceChildren();
   if(!sbMode || !curId || !curEx()){ g.hidden = true; return; }
   g.hidden = false;
-  if(isAdmin){ g.append(el('span', 'badge', '선생님 모드 · 모든 전시를 고칠 수 있어요')); return; }
+  if(isAdmin){
+    const rb = el('button', 'btn', '학생 비밀번호 새로 정하기'); rb.type = 'button';
+    rb.onclick = () => {
+      g.replaceChildren();
+      const f = el('form', 'gate-row'); f.style.margin = '0';
+      const i1 = el('input'), i2 = el('input');
+      [i1, i2].forEach(i => { i.type = 'password'; i.maxLength = 40; i.autocomplete = 'new-password'; });
+      i1.placeholder = '새 비밀번호 (4자 이상)'; i2.placeholder = '한 번 더'; i1.setAttribute('aria-label', '새 비밀번호'); i2.setAttribute('aria-label', '새 비밀번호 확인');
+      const ok = el('button', 'btn primary', '바꾸기'), no = el('button', 'btn', '취소'); no.type = 'button';
+      const er = el('span', 'err'); er.hidden = true;
+      no.onclick = renderGate;
+      f.onsubmit = async ev => {
+        ev.preventDefault();
+        const say = m => { er.textContent = m; er.hidden = false; };
+        if(i1.value.length < 4) return say('4자 이상으로 적어 주세요.');
+        if(i1.value !== i2.value) return say('두 번 적은 비밀번호가 다릅니다.');
+        ok.disabled = true;
+        try{
+          await sbRpc('reset_pin', {p_ex:curId, p_admin:creds.admin, p_new:i1.value});
+          g.replaceChildren(el('span', 'badge', '새 비밀번호로 바꿨어요. 학생에게 알려 주세요.'));
+          setTimeout(renderGate, 6000);
+        }catch(err){
+          ok.disabled = false;
+          say(err && err.code === 'missing_fn' ? 'Supabase에 추가 설정(reset_pin.sql)을 먼저 실행해 주세요.'
+            : err && err.code === 'invalid_argument' ? '바꾸지 못했습니다. 선생님 모드를 끝냈다가 관리 코드로 다시 들어와 주세요.'
+            : '바꾸지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.');
+        }
+      };
+      f.append(el('span', 'meta', '이 전시의 편집 비밀번호'), i1, i2, ok, no, er); g.append(f); i1.focus();
+    };
+    g.append(el('span', 'badge', '선생님 모드 · 모든 전시를 고칠 수 있어요'), rb);
+    return;
+  }
   if(creds.pins[curId]){
     const lock = el('button', 'btn', '편집 잠그기'); lock.type = 'button';
     lock.onclick = () => { delete creds.pins[curId]; saveCreds(); updateEditUI(); refresh(); };
