@@ -1439,7 +1439,7 @@ function bindControls(){
   });
   canvas.addEventListener('pointercancel', () => { if(down && down.work) endWorkDrag('3d'); down = null; });
   document.addEventListener('pointerdown', e => { if(!vp.contains(e.target)) stageActive = false; });
-  const map = {KeyW:'fwd', ArrowUp:'fwd', KeyS:'back', ArrowDown:'back', KeyA:'left', KeyD:'right', ArrowLeft:'left', ArrowRight:'right', KeyQ:'turnL', KeyE:'turnR'};
+  const map = {KeyW:'fwd', ArrowUp:'fwd', KeyS:'back', ArrowDown:'back', KeyA:'left', KeyD:'right', ArrowLeft:'left', ArrowRight:'right'};   // keys only walk; turning is done with the mouse
   window.addEventListener('keydown', e => {
     if(!stageActive || tab !== 'hall' || !$('modal').hidden || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
     const k = map[e.code]; if(!k) return;
