@@ -325,14 +325,14 @@ textarea{min-height:110px;resize:vertical}
     <section id="tab-hall" role="tabpanel" aria-labelledby="tabbtn-hall" hidden>
       <div style="display:flex;flex-direction:column;gap:24px">
         <div class="viewport" id="viewport" tabindex="0">
-          <canvas id="c" aria-label="3D 전시장. 드래그로 둘러보고 방향키로 이동"></canvas>
+          <canvas id="c" aria-label="3D 전시장. 마우스로 끌거나 바닥을 눌러 바라볼 방향을 정하고, 방향키로 앞뒤·옆으로 이동"></canvas>
           <div class="hud"><span class="chip" id="hudTitle"></span></div>
           <div class="hint chip" id="hint">화면을 끌어서 둘러보고, 화면을 누른 뒤 W A S D 또는 방향키로 걸어요. 작품을 누르면 그 앞으로 갑니다.</div>
           <div class="pad" aria-label="이동 버튼">
             <button class="up" data-k="fwd" aria-label="앞으로">▲</button>
-            <button class="left" data-k="turnL" aria-label="왼쪽으로 돌기">◀</button>
+            <button class="left" data-k="left" aria-label="왼쪽으로 걷기">◀</button>
             <button class="down" data-k="back" aria-label="뒤로">▼</button>
-            <button class="right" data-k="turnR" aria-label="오른쪽으로 돌기">▶</button>
+            <button class="right" data-k="right" aria-label="오른쪽으로 걷기">▶</button>
           </div>
           <aside class="info" id="info" hidden aria-live="polite"></aside>
           <div class="nogl" id="nogl" hidden><p>이 브라우저에서는 3D 화면을 열 수 없습니다. 아래 도면과 도록으로 감상해 주세요.</p></div>
@@ -631,9 +631,9 @@ let selectedId = null, editingId = null, pendingImage = null, editingEx = false;
 let planEdit = false, selWallId = null, drag = null, pendingWalls = null, suppressClick = false;
 let moveMode = false, selWorkId = null, workDrag = null, pendingWorks = null, workGroups = {};
 let tab = 'intro';
-const HINT_KEYS = '화면을 끌어서 둘러보고, 화면을 누른 뒤 W A S D 또는 방향키로 걸어요. 작품을 누르면 그 앞으로 갑니다.';
+const HINT_KEYS = '마우스로 화면을 끌거나 바닥을 눌러 바라볼 방향을 정하고, 방향키 ↑ ↓ ← →로 앞뒤·옆으로 걸어요. 작품을 누르면 그 앞으로 갑니다.';
 const TOUCH = window.matchMedia && matchMedia('(pointer: coarse)').matches;
-const HINT_WALK = TOUCH ? '손가락으로 화면을 끌어서 둘러보고, 오른쪽 아래 화살표로 걸어요. 작품을 누르면 그 앞으로 갑니다.' : HINT_KEYS;
+const HINT_WALK = TOUCH ? '손가락으로 화면을 끌거나 바닥을 눌러 방향을 정하고, 오른쪽 아래 화살표로 앞뒤·옆으로 걸어요. 작품을 누르면 그 앞으로 갑니다.' : HINT_KEYS;
 $('hint').textContent = HINT_WALK;
 const HINT_MOVE = '작품을 끌어서 벽 위 원하는 곳으로 옮겨요. 위아래로도, 다른 벽으로도 옮겨집니다. 빈 곳을 끌면 둘러보기.';
 const PLAN_HELP = '점을 누르면 그 작품 앞으로, 빈 곳을 누르면 그 자리로 이동합니다. 눈금 한 칸은 2 m.';
@@ -1439,7 +1439,7 @@ function bindControls(){
   });
   canvas.addEventListener('pointercancel', () => { if(down && down.work) endWorkDrag('3d'); down = null; });
   document.addEventListener('pointerdown', e => { if(!vp.contains(e.target)) stageActive = false; });
-  const map = {KeyW:'fwd', ArrowUp:'fwd', KeyS:'back', ArrowDown:'back', KeyA:'left', KeyD:'right', ArrowLeft:'turnL', ArrowRight:'turnR', KeyQ:'turnL', KeyE:'turnR'};
+  const map = {KeyW:'fwd', ArrowUp:'fwd', KeyS:'back', ArrowDown:'back', KeyA:'left', KeyD:'right', ArrowLeft:'left', ArrowRight:'right'};   // keys only walk; turning is done with the mouse
   window.addEventListener('keydown', e => {
     if(!stageActive || tab !== 'hall' || !$('modal').hidden || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
     const k = map[e.code]; if(!k) return;
@@ -1490,9 +1490,18 @@ function nearestFace(p){
 }
 function pick(e){
   const hit = hitAt(e);
-  if(!hit) return;
-  if(hit.object.userData.workId) goToWork(hit.object.userData.workId);
-  else if(hit.object.userData.spot && !readOnly) openForm(null, hit.object.userData.spot);
+  if(hit && hit.object.userData.workId) goToWork(hit.object.userData.workId);
+  else if(hit && hit.object.userData.spot && !readOnly) openForm(null, hit.object.userData.spot);
+  else faceFloorPoint(e);
+}
+/* A click on the floor (or anywhere that isn't a work) turns the visitor to face that spot without walking. */
+function faceFloorPoint(e){
+  const {origin:o, direction:d} = setRay(e);
+  let hx, hz;
+  if(d.y < -1e-3){ const t = -o.y/d.y; hx = o.x + d.x*t; hz = o.z + d.z*t; }
+  else { hx = o.x + d.x*10; hz = o.z + d.z*10; }   // aimed at a wall or the ceiling: just face that way
+  if(Math.hypot(hx - pos.x, hz - pos.z) < .2) return;
+  goTo(pos.x, pos.z, Math.atan2(-(hx - pos.x), -(hz - pos.z)), 450);
 }
 
 /* ---------- info panel ---------- */
